@@ -31,20 +31,68 @@ function buildGameLink(hash) {
     return `https://arras.io/${normalizedHash}`;
 }
 
-function formatWebhookLog(commandName, amount, hash) {
+function formatWebhookLog(commandName, data) {
+    const hash = data.hash;
     const gameLink = buildGameLink(hash);
-    if (commandName === "find") {
-        return `Find scan started for ${hash} | ${gameLink}`;
+    const isFarmCommand =
+        commandName === "farm" || commandName === "premium-farm";
+    const amount = isFarmCommand ? data.amount : "n/a";
+    const mode =
+        commandName === "premium-farm"
+            ? "premium farm"
+            : commandName === "farm"
+              ? "farm"
+              : "find";
+    const embed = {
+        color: ACCENT_EMBED,
+        title:
+            commandName === "find"
+                ? "find scan started"
+                : "farm deployment started",
+        fields: [
+            {
+                name: "command",
+                value:
+                    `\`${commandName}\`\nmode: \`${mode}\`\nstatus: \`started\``,
+                inline: true,
+            },
+            {
+                name: "server",
+                value: `hash: \`${hash}\`\nlink: ${gameLink}`,
+                inline: true,
+            },
+            {
+                name: "deployment",
+                value: isFarmCommand
+                    ? `bots: \`${amount}\`\ntank: \`${data.tank || "Auto4"}\`\nautofire: \`${data.autoFire ? "yes" : "no"}\``
+                    : `teams: \`${data.teams || 2}\`\nscan target: \`${hash}\`\nlookup: \`active\``,
+                inline: true,
+            },
+        ],
+        timestamp: new Date().toISOString(),
+    };
+
+    if (isFarmCommand) {
+        embed.fields.push({
+            name: "controls",
+            value:
+                `follow mouse: \`${data.followMouse ? "yes" : "no"}\`\ndirection: \`${data.direction || "none"}\`\ncoords: \`${data.targetX ?? "n/a"}, ${data.targetY ?? "n/a"}\``,
+            inline: false,
+        });
     }
-    return `${amount} feeding bots sent to ${hash} etc.. | ${gameLink}`;
+
+    if (commandName === "find") {
+        return { embeds: [embed] };
+    }
+    return { embeds: [embed] };
 }
 
-async function sendWebhookLog(message) {
+async function sendWebhookLog(payload) {
     try {
         await fetch(WEBHOOK_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ content: message }),
+            body: JSON.stringify(payload),
         });
     } catch (e) {
         console.error("[system] webhook log failed:", e.message);
@@ -2629,7 +2677,7 @@ const commands = [
         ),
     new SlashCommandBuilder()
         .setName("farm")
-        .setDescription("spawn 90 bots and move them to specific coordinates")
+        .setDescription("spawn 15 bots and move them to specific coordinates")
         .setDMPermission(true)
         .addStringOption((option) =>
             option
@@ -2713,9 +2761,7 @@ const commands = [
         ),
     new SlashCommandBuilder()
         .setName("premium-farm")
-        .setDescription(
-            "spawn 30 bots with premium mouse-following capabilities",
-        )
+        .setDescription("spawn 15 bots with premium mouse-following capabilities")
         .setDMPermission(true)
         .addStringOption((option) =>
             option
@@ -3096,7 +3142,7 @@ client.on("interactionCreate", async (interaction) => {
             const now = Date.now();
             const cooldownDuration = 3 * 60 * 1000; // 3 minutes
 
-            if (cooldowns[userId] && now < cooldowns[userId]) {
+            if (!isBypassUser && cooldowns[userId] && now < cooldowns[userId]) {
                 const remaining = Math.ceil((cooldowns[userId] - now) / 1000);
                 const minutes = Math.floor(remaining / 60);
                 const seconds = remaining % 60;
@@ -3111,7 +3157,7 @@ client.on("interactionCreate", async (interaction) => {
                             seconds +
                             "s ]\n```",
                     )
-                    .setFooter({ text: "free farm: discord.gg/fQFTCMC5hY" })
+                    .setFooter({ text: "Purchase premium to spawn more bots" })
                     .setTimestamp();
 
                 return await interaction.reply({
@@ -3142,8 +3188,8 @@ client.on("interactionCreate", async (interaction) => {
             : "Auto4";
         const amount =
             isFarm && isBypassUser
-                ? interaction.options.getInteger("amount") || 30
-                : 30;
+                ? interaction.options.getInteger("amount") || 15
+                : 15;
 
         const initialHash = hashInput.startsWith("#")
             ? hashInput
@@ -3154,11 +3200,24 @@ client.on("interactionCreate", async (interaction) => {
         if (isFarm) {
             incrementBotCount(userId, amount);
             sendWebhookLog(
-                formatWebhookLog(interaction.commandName, amount, initialHash),
+                formatWebhookLog(interaction.commandName, {
+                    amount,
+                    hash: initialHash,
+                    tank,
+                    autoFire,
+                    followMouse,
+                    direction,
+                    targetX,
+                    targetY,
+                }),
             );
         } else {
             sendWebhookLog(
-                formatWebhookLog(interaction.commandName, amount, initialHash),
+                formatWebhookLog(interaction.commandName, {
+                    amount,
+                    hash: initialHash,
+                    teams: interaction.options.getInteger("teams") || 2,
+                }),
             );
         }
 
