@@ -1,4 +1,5 @@
 (async () => {
+  const { parentPort } = await import("worker_threads");
   const { WebSocket } = await import("ws");
   const { HttpsProxyAgent } = await import("https-proxy-agent");
   const { SocksProxyAgent } = await import("socks-proxy-agent");
@@ -6,6 +7,20 @@
   //const fs = await import('fs');
   const fetchModule = await import("node-fetch");
   const realFetch = fetchModule.default || fetchModule;
+  const sendMessage = (message) => {
+    if (parentPort) {
+      parentPort.postMessage(message);
+    } else if (process.send) {
+      process.send(message);
+    }
+  };
+  const onMessage = (handler) => {
+    if (parentPort) {
+      parentPort.on("message", handler);
+      return;
+    }
+    process.on("message", handler);
+  };
 
   // ===== CHECK FOR COMMAND LINE ARGUMENTS =====
   const args = process.argv.slice(2);
@@ -1411,9 +1426,7 @@
           if (lastHash !== global.location.hash) {
             log("hash =", global.location.hash);
             lastHash = global.location.hash;
-            if (process.send) {
-              process.send({ type: "hash_update", hash: global.location.hash });
-            }
+            sendMessage({ type: "hash_update", hash: global.location.hash });
           }
           let at = timeouts[i];
           if (at) {
@@ -1697,9 +1710,7 @@
           d.addEventListener("open", function () {
             log("WebSocket open.");
             connected = true;
-            if (process.send) {
-              process.send({ type: "connected", hash: global.location.hash });
-            }
+            sendMessage({ type: "connected", hash: global.location.hash });
           });
 
           d.addEventListener("close", function (e) {
@@ -1766,7 +1777,7 @@
     return arras;
   })();
 
-  process.on("message", (message) => {
+  onMessage((message) => {
     if (message.type === "start") {
       const config = message.config;
       options.token = config.token;
