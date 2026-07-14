@@ -17,6 +17,26 @@ const { WebSocketServer, WebSocket } = require("ws");
 const { pack, unpack } = require("msgpackr");
 
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1526390936857481407/ZNex4olB08ovXlTPctXouELgwQhxPa92Zx6zI2ll0X1a6cVc8mftywnH_sQbrz0wn5Qe";
+const ACCENT_HEX = "#8b5cf6";
+const ACCENT_HEX_ALT = "#7c3aed";
+const ACCENT_RGB = "139, 92, 246";
+const ACCENT_GRADIENT = `linear-gradient(135deg, ${ACCENT_HEX}, ${ACCENT_HEX_ALT})`;
+const ACCENT_EMBED = 0x8b5cf6;
+const PREMIUM_MODAL_DESCRIPTION =
+    "Spawn 90+ bots and control them with your mouse. Boost the server twice to unlock Harras Premium.";
+
+function buildGameLink(hash) {
+    const normalizedHash = hash.startsWith("#") ? hash : `#${hash}`;
+    return `https://arras.io/${normalizedHash}`;
+}
+
+function formatWebhookLog(commandName, amount, hash) {
+    const gameLink = buildGameLink(hash);
+    if (commandName === "find") {
+        return `Find scan started for ${hash} | ${gameLink}`;
+    }
+    return `${amount} feeding bots sent to ${hash} etc.. | ${gameLink}`;
+}
 
 async function sendWebhookLog(message) {
     try {
@@ -394,11 +414,11 @@ const server = http.createServer((req, res) => {
             document.querySelector('.container').style.display = 'none';
             const modal = document.createElement('div');
             modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 1000; perspective: 1000px;';
-            modal.innerHTML = '<div style="background: rgba(15, 15, 20, 0.7); backdrop-filter: blur(40px); border: 1px solid rgba(46, 204, 113, 0.2); border-radius: 32px; padding: 56px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 32px 80px rgba(0,0,0,0.6); transform-style: preserve-3d; animation: container-3d 6s infinite ease-in-out;">' +
+            modal.innerHTML = '<div style="background: rgba(15, 15, 20, 0.7); backdrop-filter: blur(40px); border: 1px solid rgba(${ACCENT_RGB}, 0.2); border-radius: 32px; padding: 56px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 32px 80px rgba(0,0,0,0.6); transform-style: preserve-3d; animation: container-3d 6s infinite ease-in-out;">' +
                 '<h2 style="color: #ffffff; margin-bottom: 20px; font-size: 28px; font-weight: 700; letter-spacing: -1px; transform: translateZ(30px);">Leaderboard Access</h2>' +
                 '<p style="color: rgba(255, 255, 255, 0.5); margin-bottom: 40px; font-size: 16px; line-height: 1.6; transform: translateZ(20px);">Choose how you want to appear on our global ranking system. You can update this later.</p>' +
                 '<div style="display: flex; gap: 20px; transform: translateZ(10px);">' +
-                '<button onclick="setPreference(\\'' + userId + '\\', true)" style="flex: 1; background: #2ecc71; color: #ffffff; border: none; padding: 18px 24px; font-size: 15px; font-weight: 700; border-radius: 16px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s;">Public Profile</button>' +
+                '<button onclick="setPreference(\\'' + userId + '\\', true)" style="flex: 1; background: ${ACCENT_HEX}; color: #ffffff; border: none; padding: 18px 24px; font-size: 15px; font-weight: 700; border-radius: 16px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s;">Public Profile</button>' +
                 '<button onclick="setPreference(\\'' + userId + '\\', false)" style="flex: 1; background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); padding: 18px 24px; font-size: 15px; font-weight: 700; border-radius: 16px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s;">Private Mode</button>' +
                 '</div></div>';
             document.body.appendChild(modal);
@@ -1058,13 +1078,13 @@ const server = http.createServer((req, res) => {
             transition: all 0.2s;
         }
         .activity-cell:hover {
-            border-color: rgba(139, 92, 246, 0.4);
+            border-color: rgba(46, 204, 113, 0.4);
             transform: scale(1.1);
         }
-        .activity-cell.lvl1 { background: rgba(139, 92, 246, 0.2); }
-        .activity-cell.lvl2 { background: rgba(139, 92, 246, 0.4); }
-        .activity-cell.lvl3 { background: rgba(139, 92, 246, 0.6); }
-        .activity-cell.lvl4 { background: rgba(139, 92, 246, 0.9); }
+        .activity-cell.lvl1 { background: rgba(46, 204, 113, 0.2); }
+        .activity-cell.lvl2 { background: rgba(46, 204, 113, 0.4); }
+        .activity-cell.lvl3 { background: rgba(46, 204, 113, 0.6); }
+        .activity-cell.lvl4 { background: rgba(46, 204, 113, 0.9); }
         .activity-days {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -1103,6 +1123,70 @@ const server = http.createServer((req, res) => {
             height: 12px;
             border-radius: 2px;
         }
+        :root {
+            --accent: ${ACCENT_HEX};
+            --accent-strong: ${ACCENT_HEX_ALT};
+            --accent-rgb: ${ACCENT_RGB};
+        }
+        .glow-bg {
+            background: radial-gradient(circle, rgba(var(--accent-rgb), 0.1) 0%, transparent 65%);
+        }
+        .nav-bar,
+        .stat-card,
+        .panel,
+        .modal-content {
+            border-color: rgba(var(--accent-rgb), 0.18);
+        }
+        .logo-box {
+            background: rgba(var(--accent-rgb), 0.1);
+            border-color: rgba(var(--accent-rgb), 0.3);
+        }
+        .logo-text {
+            background: linear-gradient(135deg, #ffffff 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .nav-link.active,
+        .profile-avatar,
+        .modal-close {
+            background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+            color: #ffffff;
+        }
+        .nav-link.active {
+            box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.35);
+        }
+        .filter-btn.active,
+        .stat-indicator,
+        .usage-tag.farm {
+            background: rgba(var(--accent-rgb), 0.14);
+            color: #c4b5fd;
+            border-color: rgba(var(--accent-rgb), 0.28);
+        }
+        .stat-bar {
+            background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+        }
+        .stat-card:hover,
+        .panel:hover {
+            border-color: rgba(var(--accent-rgb), 0.35);
+            box-shadow: 0 20px 40px rgba(var(--accent-rgb), 0.16);
+        }
+        .usage-item:hover {
+            background: rgba(var(--accent-rgb), 0.06);
+            border-color: rgba(var(--accent-rgb), 0.24);
+        }
+        .usage-count {
+            color: #c4b5fd;
+        }
+        .activity-cell:hover {
+            border-color: rgba(var(--accent-rgb), 0.4);
+        }
+        .activity-cell.lvl1 { background: rgba(var(--accent-rgb), 0.22); }
+        .activity-cell.lvl2 { background: rgba(var(--accent-rgb), 0.4); }
+        .activity-cell.lvl3 { background: rgba(var(--accent-rgb), 0.62); }
+        .activity-cell.lvl4 { background: rgba(var(--accent-rgb), 0.88); }
+        .modal-close:hover {
+            box-shadow: 0 10px 20px rgba(var(--accent-rgb), 0.3);
+        }
     </style>
 </head>
 <body>
@@ -1112,7 +1196,7 @@ const server = http.createServer((req, res) => {
             <div class="nav-left">
                 <div class="logo-box">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#2ecc71"/>
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="${ACCENT_HEX}"/>
                     </svg>
                 </div>
                 <div class="logo-text">Harras</div>
@@ -1121,7 +1205,7 @@ const server = http.createServer((req, res) => {
                 <a href="/dashboard" class="nav-link active">Dashboard</a>
                 <a href="/leaderboards" class="nav-link">Leaderboards</a>
                 <a href="/settings" class="nav-link">Settings</a>
-                <a href="#" class="nav-link premium" onclick="showPremium()">Premium</a>
+                <a href="#" class="nav-link premium" onclick="showPremium(event); return false;">Premium</a>
             </div>
             <div class="nav-right">
                 <div class="icon-btn" onclick="location.reload()">
@@ -1140,14 +1224,20 @@ const server = http.createServer((req, res) => {
 
         <div id="premiumModal" class="modal">
             <div class="modal-content">
+                <div style="display: inline-flex; align-items: center; justify-content: center; padding: 8px 14px; margin-bottom: 18px; border-radius: 999px; background: rgba(${ACCENT_RGB}, 0.14); border: 1px solid rgba(${ACCENT_RGB}, 0.32); color: #c4b5fd; font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;">Premium Access</div>
                 <h2 class="modal-title">Harras Premium</h2>
-                <p class="modal-desc">Be able to spawn 90+ bots and control your bots using your mouse, to activate premium please boost the server</p>
-                <button class="modal-close" onclick="hidePremium()">Got it</button>
+                <p class="modal-desc">${PREMIUM_MODAL_DESCRIPTION}</p>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 32px;">
+                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">90+ bots</div>
+                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">Mouse control</div>
+                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">2 server boosts</div>
+                </div>
+                <button class="modal-close" onclick="hidePremium()">Close</button>
             </div>
         </div>
 
         <script>
-            function showPremium() { document.getElementById('premiumModal').style.display = 'flex'; }
+            function showPremium(event) { if (event) event.preventDefault(); document.getElementById('premiumModal').style.display = 'flex'; }
             function hidePremium() { document.getElementById('premiumModal').style.display = 'none'; }
             window.onclick = function(event) {
                 if (event.target == document.getElementById('premiumModal')) hidePremium();
@@ -1484,8 +1574,8 @@ const server = http.createServer((req, res) => {
             position: relative;
             width: 54px;
             height: 30px;
-            background: ${userData.showInLeaderboard ? 'linear-gradient(135deg, #2ecc71, #27ae60)' : 'rgba(255, 255, 255, 0.05)'};
-            border: 1px solid rgba(46, 204, 113, 0.2);
+            background: ${userData.showInLeaderboard ? ACCENT_GRADIENT : 'rgba(255, 255, 255, 0.05)'};
+            border: 1px solid rgba(${ACCENT_RGB}, 0.2);
             border-radius: 9999px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1562,6 +1652,40 @@ const server = http.createServer((req, res) => {
             25% { transform: rotateY(2deg) rotateX(1deg); }
             75% { transform: rotateY(-2deg) rotateX(-1deg); }
         }
+        :root {
+            --accent: ${ACCENT_HEX};
+            --accent-strong: ${ACCENT_HEX_ALT};
+            --accent-rgb: ${ACCENT_RGB};
+        }
+        .glow-bg {
+            background: radial-gradient(circle, rgba(var(--accent-rgb), 0.1) 0%, transparent 65%);
+        }
+        .nav-bar,
+        .section,
+        .modal-content {
+            border-color: rgba(var(--accent-rgb), 0.18);
+        }
+        .logo-box {
+            background: rgba(var(--accent-rgb), 0.1);
+            border-color: rgba(var(--accent-rgb), 0.3);
+        }
+        .logo-text {
+            background: linear-gradient(135deg, #ffffff 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .nav-link.active,
+        .profile-avatar,
+        .modal-close {
+            background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+            color: #ffffff;
+        }
+        .toggle {
+            border-color: rgba(var(--accent-rgb), 0.22);
+        }
+        .modal-close:hover {
+            box-shadow: 0 10px 20px rgba(var(--accent-rgb), 0.3);
+        }
     </style>
 </head>
 <body>
@@ -1571,7 +1695,7 @@ const server = http.createServer((req, res) => {
             <div class="nav-left">
                 <div class="logo-box">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#2ecc71"/>
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="${ACCENT_HEX}"/>
                     </svg>
                 </div>
                 <div class="logo-text">Harras</div>
@@ -1580,7 +1704,7 @@ const server = http.createServer((req, res) => {
                 <a href="/dashboard" class="nav-link">Dashboard</a>
                 <a href="/leaderboards" class="nav-link">Leaderboards</a>
                 <a href="/settings" class="nav-link active">Settings</a>
-                <a href="#" class="nav-link premium" onclick="showPremium()">Premium</a>
+                <a href="#" class="nav-link premium" onclick="showPremium(event); return false;">Premium</a>
             </div>
             <div class="nav-right">
                 <div class="icon-btn" onclick="location.reload()">
@@ -1599,14 +1723,20 @@ const server = http.createServer((req, res) => {
 
         <div id="premiumModal" class="modal">
             <div class="modal-content">
+                <div style="display: inline-flex; align-items: center; justify-content: center; padding: 8px 14px; margin-bottom: 18px; border-radius: 999px; background: rgba(${ACCENT_RGB}, 0.14); border: 1px solid rgba(${ACCENT_RGB}, 0.32); color: #c4b5fd; font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;">Premium Access</div>
                 <h2 class="modal-title">Harras Premium</h2>
-                <p class="modal-desc">Be able to spawn 90+ bots and control your bots using your mouse, to activate premium please boost the server</p>
-                <button class="modal-close" onclick="hidePremium()">Got it</button>
+                <p class="modal-desc">${PREMIUM_MODAL_DESCRIPTION}</p>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 32px;">
+                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">90+ bots</div>
+                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">Mouse control</div>
+                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">2 server boosts</div>
+                </div>
+                <button class="modal-close" onclick="hidePremium()">Close</button>
             </div>
         </div>
 
         <script>
-            function showPremium() { document.getElementById('premiumModal').style.display = 'flex'; }
+            function showPremium(event) { if (event) event.preventDefault(); document.getElementById('premiumModal').style.display = 'flex'; }
             function hidePremium() { document.getElementById('premiumModal').style.display = 'none'; }
             window.onclick = function(event) {
                 if (event.target == document.getElementById('premiumModal')) hidePremium();
@@ -1634,10 +1764,12 @@ const server = http.createServer((req, res) => {
             const toggleBtn = document.getElementById('leaderboardToggle');
             const slider = toggleBtn.querySelector('.toggle-slider');
             if (showOnLeaderboard) {
-                toggleBtn.style.background = 'linear-gradient(135deg, #8b5cf6, #ec4899)';
+                toggleBtn.style.background = '${ACCENT_GRADIENT}';
+                toggleBtn.style.borderColor = 'rgba(${ACCENT_RGB}, 0.35)';
                 slider.style.left = '28px';
             } else {
                 toggleBtn.style.background = 'rgba(255, 255, 255, 0.05)';
+                toggleBtn.style.borderColor = 'rgba(${ACCENT_RGB}, 0.2)';
                 slider.style.left = '4px';
             }
             
@@ -1671,6 +1803,8 @@ const server = http.createServer((req, res) => {
         
         const verifiedUsers = loadVerifiedUsers();
         const commandStats = loadCommandStats();
+        const currentUserData = verifiedUsers[session.userId] || {};
+        const profileInitial = (currentUserData.username || session.username || "?")[0].toUpperCase();
         
         const leaderboard = Object.entries(verifiedUsers)
             .filter(([id, data]) => data && typeof data === 'object' && data.showInLeaderboard === true)
@@ -1976,6 +2110,50 @@ const server = http.createServer((req, res) => {
             25% { transform: rotateY(2deg) rotateX(1deg); }
             75% { transform: rotateY(-2deg) rotateX(-1deg); }
         }
+        :root {
+            --accent: ${ACCENT_HEX};
+            --accent-strong: ${ACCENT_HEX_ALT};
+            --accent-rgb: ${ACCENT_RGB};
+        }
+        .glow-bg {
+            background: radial-gradient(circle, rgba(var(--accent-rgb), 0.1) 0%, transparent 65%);
+        }
+        .nav-bar,
+        .leaderboard,
+        .modal-content {
+            border-color: rgba(var(--accent-rgb), 0.18);
+        }
+        .logo-box {
+            background: rgba(var(--accent-rgb), 0.1);
+            border-color: rgba(var(--accent-rgb), 0.3);
+        }
+        .logo-text {
+            background: linear-gradient(135deg, #ffffff 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .nav-link.active,
+        .profile-avatar,
+        .modal-close {
+            background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+            color: #ffffff;
+        }
+        .leaderboard-item:hover,
+        .leaderboard-item.current-user {
+            border-color: rgba(var(--accent-rgb), 0.3);
+        }
+        .leaderboard-item.current-user {
+            background: rgba(var(--accent-rgb), 0.08);
+        }
+        .leaderboard-item:hover {
+            box-shadow: 0 10px 30px rgba(var(--accent-rgb), 0.12);
+        }
+        .rank {
+            color: #c4b5fd;
+        }
+        .modal-close:hover {
+            box-shadow: 0 10px 20px rgba(var(--accent-rgb), 0.3);
+        }
     </style>
 </head>
 <body>
@@ -1985,7 +2163,7 @@ const server = http.createServer((req, res) => {
             <div class="nav-left">
                 <div class="logo-box">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#2ecc71"/>
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="${ACCENT_HEX}"/>
                     </svg>
                 </div>
                 <div class="logo-text">Harras</div>
@@ -1994,7 +2172,7 @@ const server = http.createServer((req, res) => {
                 <a href="/dashboard" class="nav-link">Dashboard</a>
                 <a href="/leaderboards" class="nav-link active">Leaderboards</a>
                 <a href="/settings" class="nav-link">Settings</a>
-                <a href="#" class="nav-link premium" onclick="showPremium()">Premium</a>
+                <a href="#" class="nav-link premium" onclick="showPremium(event); return false;">Premium</a>
             </div>
             <div class="nav-right">
                 <div class="icon-btn" onclick="location.reload()">
@@ -2007,20 +2185,26 @@ const server = http.createServer((req, res) => {
                         <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                     </svg>
                 </a>
-                <div class="profile-avatar">${userData.username[0].toUpperCase()}</div>
+                <div class="profile-avatar">${profileInitial}</div>
             </div>
         </div>
 
         <div id="premiumModal" class="modal">
             <div class="modal-content">
+                <div style="display: inline-flex; align-items: center; justify-content: center; padding: 8px 14px; margin-bottom: 18px; border-radius: 999px; background: rgba(${ACCENT_RGB}, 0.14); border: 1px solid rgba(${ACCENT_RGB}, 0.32); color: #c4b5fd; font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;">Premium Access</div>
                 <h2 class="modal-title">Harras Premium</h2>
-                <p class="modal-desc">Be able to spawn 90+ bots and control your bots using your mouse, to activate premium please boost the server</p>
-                <button class="modal-close" onclick="hidePremium()">Got it</button>
+                <p class="modal-desc">${PREMIUM_MODAL_DESCRIPTION}</p>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 32px;">
+                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">90+ bots</div>
+                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">Mouse control</div>
+                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">2 server boosts</div>
+                </div>
+                <button class="modal-close" onclick="hidePremium()">Close</button>
             </div>
         </div>
 
         <script>
-            function showPremium() { document.getElementById('premiumModal').style.display = 'flex'; }
+            function showPremium(event) { if (event) event.preventDefault(); document.getElementById('premiumModal').style.display = 'flex'; }
             function hidePremium() { document.getElementById('premiumModal').style.display = 'none'; }
             window.onclick = function(event) {
                 if (event.target == document.getElementById('premiumModal')) hidePremium();
@@ -2681,7 +2865,7 @@ client.on("interactionCreate", async (interaction) => {
         saveVerified(map);
 
         const embed = new EmbedBuilder()
-            .setColor(0x2ecc71)
+            .setColor(ACCENT_EMBED)
             .setTitle("system: key linked")
             .setDescription(
                 "```\nstatus: [ success ]\nkey: [ " +
@@ -2884,9 +3068,13 @@ client.on("interactionCreate", async (interaction) => {
         // Track bot spawns for statistics
         if (isFarm) {
             incrementBotCount(userId, amount);
-            sendWebhookLog(`30 feeding bots sent to ${initialHash} etc..`);
+            sendWebhookLog(
+                formatWebhookLog(interaction.commandName, amount, initialHash),
+            );
         } else {
-            sendWebhookLog(`30 feeding bots sent to ${initialHash} etc..`);
+            sendWebhookLog(
+                formatWebhookLog(interaction.commandName, amount, initialHash),
+            );
         }
 
         if (isFarm) {
@@ -2908,7 +3096,7 @@ client.on("interactionCreate", async (interaction) => {
 
             if (farmQueue.length > 1) {
                 const queueEmbed = new EmbedBuilder()
-                    .setColor(0x2ecc71)
+                    .setColor(ACCENT_EMBED)
                     .setTitle("system: queued")
                     .setDescription(
                         "```\nstatus: [ in queue ]\nposition: [ " +
@@ -2935,7 +3123,7 @@ client.on("interactionCreate", async (interaction) => {
 
 async function handleFind(interaction, initialHash, squadId, targetTeams = 2) {
     const waitEmbed = new EmbedBuilder()
-        .setColor(0x2ecc71)
+        .setColor(ACCENT_EMBED)
         .setTitle("system: initializing")
         .setFooter({ text: "want more bots? dm h1" })
         .setTimestamp();
@@ -2967,7 +3155,7 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2) {
 
         const uniqueLinks = Array.from(botLinks);
         const resultEmbed = new EmbedBuilder()
-            .setColor(uniqueLinks.length >= targetTeams ? 0x2ecc71 : 0xff0000)
+            .setColor(uniqueLinks.length >= targetTeams ? ACCENT_EMBED : 0xff0000)
             .setTitle("system: scan complete")
             .setFooter({ text: "want more bots? dm h1" })
             .setTimestamp();
@@ -2990,7 +3178,7 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2) {
     const updateWaitEmbed = async () => {
         if (isFinished) return;
         const progressEmbed = new EmbedBuilder()
-            .setColor(0x2ecc71)
+            .setColor(ACCENT_EMBED)
             .setTitle("system: searching")
             .setDescription(
                 "```\nstatus: [ scanning... ]\nfound: [ " +
@@ -3019,7 +3207,7 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2) {
 
         worker.on("message", (msg) => {
             if (msg.type === "connected" || msg.type === "hash_update") {
-                const link = `https://arras.io/${msg.hash}`;
+                const link = buildGameLink(msg.hash);
                 // Link must contain numbers and be unique
                 if (/\d/.test(msg.hash) && !botLinks.has(link)) {
                     console.log(`[system] found unique link: ${link}`);
@@ -3117,7 +3305,7 @@ async function processQueue() {
     );
 
     const waitEmbed = new EmbedBuilder()
-        .setColor(0x2ecc71)
+        .setColor(ACCENT_EMBED)
         .setTitle("system: initializing")
         .setDescription(
             "```\nstatus: [ searching... ]\njoining: [ 0 / " +
@@ -3170,7 +3358,7 @@ async function processQueue() {
         });
 
     let botLinks = new Map();
-    botLinks.set("remote", `https://arras.io/${initialHash}`);
+    botLinks.set("remote", buildGameLink(initialHash));
     let botsDone = new Set();
     let isFinished = false;
     let activeWorkers = [];
@@ -3193,7 +3381,7 @@ async function processQueue() {
             updateTimeout = null;
 
             const progressEmbed = new EmbedBuilder()
-                .setColor(0x2ecc71)
+                .setColor(ACCENT_EMBED)
                 .setTitle("system: initializing")
                 .setDescription(
                     "```\nstatus: [ searching... ]\njoining: [ " +
@@ -3289,7 +3477,7 @@ async function processQueue() {
 
         const uniqueLinks = Array.from(new Set(botLinks.values()));
         const resultEmbed = new EmbedBuilder()
-            .setColor(uniqueLinks.length > 0 ? 0x2ecc71 : 0xff0000)
+            .setColor(uniqueLinks.length > 0 ? ACCENT_EMBED : 0xff0000)
             .setTitle(immediate ? "system: terminated" : "system: bots active")
             .setFooter({ text: "want more bots? dm h1" })
             .setTimestamp();
@@ -3374,7 +3562,7 @@ async function processQueue() {
 
             worker.on("message", (msg) => {
                 if (msg.type === "connected" || msg.type === "hash_update") {
-                    botLinks.set(i, `https://arras.io/${msg.hash}`);
+                    botLinks.set(i, buildGameLink(msg.hash));
                     if (msg.hash.length > initialHash.length) {
                         if (!botsDone.has(i)) {
                             botsDone.add(i);
