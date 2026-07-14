@@ -10,7 +10,7 @@ const {
     ButtonBuilder,
     ButtonStyle,
 } = require("discord.js");
-const { fork } = require("child_process");
+const { Worker } = require("worker_threads");
 const fs = require("fs");
 const path = require("path");
 const { WebSocketServer, WebSocket } = require("ws");
@@ -23,6 +23,14 @@ const ACCENT_RGB = "139, 92, 246";
 const ACCENT_GRADIENT = `linear-gradient(135deg, ${ACCENT_HEX}, ${ACCENT_HEX_ALT})`;
 const ACCENT_EMBED = 0x8b5cf6;
 const BYPASS_USER_IDS = new Set(["1289669511280066673"]);
+const BOT_WORKER_FILE = path.join(__dirname, "index2.js");
+const BOT_WORKER_LIMITS = {
+    maxOldGenerationSizeMb: 96,
+    maxYoungGenerationSizeMb: 32,
+    stackSizeMb: 2,
+};
+const BOT_BOOT_TIMEOUT = 12000;
+const SESSION_CLEANUP_DELAY = 15000;
 const PREMIUM_MODAL_DESCRIPTION =
     "Spawn 90+ bots and control them with your mouse. Boost the server twice to unlock Harras Premium.";
 
@@ -111,10 +119,24 @@ class RemoteSwarm {
         this.ws = null;
         this.verified = false;
         this.challenge = null;
-        this.connect();
+        this.connecting = false;
+        this.closed = false;
+        this.reconnectTimeout = null;
+        this.readyResolvers = [];
     }
 
     connect() {
+        if (this.closed || this.connecting) {
+            return;
+        }
+        if (
+            this.ws &&
+            (this.ws.readyState === WebSocket.OPEN ||
+                this.ws.readyState === WebSocket.CONNECTING)
+        ) {
+            return;
+        }
+        this.connecting = true;
         console.log(`[system] connecting to remote: [ ${this.url} ]`);
         this.ws = new WebSocket(this.url);
         this.ws.on("open", () => {
@@ -128,13 +150,18 @@ class RemoteSwarm {
                     this.challenge = data[0];
                     this.ws.send(pack(["C", this.challenge ^ 845]));
                     this.verified = true;
+                    this.connecting = false;
+                    this.flushReadyResolvers(true);
                     console.log(`[system] remote verified: [ ${this.url} ]`);
                 }
             } catch (e) {}
         });
         this.ws.on("close", () => {
             this.verified = false;
-            setTimeout(() => this.connect(), 5000);
+            this.connecting = false;
+            if (!this.closed) {
+                this.reconnectTimeout = setTimeout(() => this.connect(), 5000);
+            }
         });
         this.ws.on("error", () => {
             if (this.ws) this.ws.close();
@@ -146,9 +173,131 @@ class RemoteSwarm {
             this.ws.send(pack(packet));
         }
     }
+
+    flushReadyResolvers(isReady) {
+        const resolvers = this.readyResolvers.splice(0);
+        resolvers.forEach((resolve) => resolve(isReady));
+    }
+
+    waitForReady(timeoutMs = 4000) {
+        if (this.verified) {
+            return Promise.resolve(true);
+        }
+        this.connect();
+        return new Promise((resolve) => {
+            const done = (value) => {
+                clearTimeout(timeout);
+                resolve(value);
+            };
+            const timeout = setTimeout(() => {
+                this.readyResolvers = this.readyResolvers.filter(
+                    (entry) => entry !== done,
+                );
+                resolve(this.verified);
+            }, timeoutMs);
+            this.readyResolvers.push(done);
+        });
+    }
+
+    shutdown() {
+        this.closed = true;
+        this.verified = false;
+        this.connecting = false;
+        if (this.reconnectTimeout) {
+            clearTimeout(this.reconnectTimeout);
+            this.reconnectTimeout = null;
+        }
+        this.flushReadyResolvers(false);
+        if (this.ws) {
+            try {
+                this.ws.close();
+            } catch (e) {}
+        }
+        this.ws = null;
+    }
 }
 
-const remoteSwarms = REMOTE_URLS.map((url) => new RemoteSwarm(url));
+let remoteSwarms = [];
+
+function createBotWorker() {
+    const worker = new Worker(BOT_WORKER_FILE, {
+        resourceLimits: BOT_WORKER_LIMITS,
+    });
+    worker.alive = true;
+    worker.booted = false;
+    worker.terminating = false;
+    worker.bootTimeout = setTimeout(() => {
+        shutdownBotWorker(worker);
+    }, BOT_BOOT_TIMEOUT);
+    worker.on("exit", () => {
+        worker.alive = false;
+        if (worker.bootTimeout) {
+            clearTimeout(worker.bootTimeout);
+            worker.bootTimeout = null;
+        }
+    });
+    worker.on("error", (err) => {
+        console.log(`[system] worker error: [ ${err.message} ]`);
+    });
+    return worker;
+}
+
+function isBotWorkerAlive(worker) {
+    return Boolean(worker && worker.alive && !worker.terminating);
+}
+
+function sendBotWorker(worker, payload) {
+    if (isBotWorkerAlive(worker)) {
+        worker.postMessage(payload);
+    }
+}
+
+function markBotWorkerReady(worker) {
+    if (!worker) {
+        return;
+    }
+    worker.booted = true;
+    if (worker.bootTimeout) {
+        clearTimeout(worker.bootTimeout);
+        worker.bootTimeout = null;
+    }
+}
+
+function shutdownBotWorker(worker) {
+    if (!worker || worker.terminating) {
+        return;
+    }
+    worker.terminating = true;
+    if (worker.bootTimeout) {
+        clearTimeout(worker.bootTimeout);
+        worker.bootTimeout = null;
+    }
+    try {
+        worker.postMessage({ type: "destroy" });
+    } catch (e) {}
+    setTimeout(() => {
+        if (worker.alive) {
+            worker.terminate().catch(() => {});
+        }
+    }, 250);
+}
+
+async function ensureRemoteSwarms() {
+    if (remoteSwarms.length === 0) {
+        remoteSwarms = REMOTE_URLS.map((url) => new RemoteSwarm(url));
+    }
+    await Promise.all(remoteSwarms.map((swarm) => swarm.waitForReady()));
+    return remoteSwarms.filter((swarm) => swarm.verified);
+}
+
+function getReadyRemoteSwarms() {
+    return remoteSwarms.filter((swarm) => swarm.verified);
+}
+
+function shutdownRemoteSwarms() {
+    remoteSwarms.forEach((swarm) => swarm.shutdown());
+    remoteSwarms = [];
+}
 
 // --- SYSTEM HANDLERS ---
 process.on("uncaughtException", (err) => {
@@ -2452,23 +2601,21 @@ wss.on("connection", (ws) => {
                 }
 
                 global.currentFarmSession.activeWorkers.forEach((worker) => {
-                    if (worker.connected) {
-                        worker.send({
-                            type: "position",
-                            x: data[0] || 0,
-                            y: data[1] || 0,
-                            mouseX: data[2] || 0,
-                            mouseY: data[3] || 0,
-                            mouseDown: data[4],
-                            rMouseDown: data[5],
-                            mouse: data[6],
-                            feeding: data[7],
-                            shift: data[8],
-                        });
-                    }
+                    sendBotWorker(worker, {
+                        type: "position",
+                        x: data[0] || 0,
+                        y: data[1] || 0,
+                        mouseX: data[2] || 0,
+                        mouseY: data[3] || 0,
+                        mouseDown: data[4],
+                        rMouseDown: data[5],
+                        mouse: data[6],
+                        feeding: data[7],
+                        shift: data[8],
+                    });
                 });
 
-                remoteSwarms.forEach((swarm) => {
+                getReadyRemoteSwarms().forEach((swarm) => {
                     swarm.send(["A", ...data]);
                 });
             }
@@ -3292,9 +3439,7 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2) {
         if (isFinished) return;
         isFinished = true;
         activeWorkers.forEach((w) => {
-            try {
-                w.kill();
-            } catch (e) {}
+            shutdownBotWorker(w);
         });
 
         const uniqueLinks = Array.from(botLinks);
@@ -3346,11 +3491,12 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2) {
     const spawnBot = (id) => {
         if (isFinished) return;
         const proxyIdx = id % PROXIES.length;
-        const worker = fork("index2.js", [], { silent: true });
+        const worker = createBotWorker();
         activeWorkers.push(worker);
 
         worker.on("message", (msg) => {
             if (msg.type === "connected" || msg.type === "hash_update") {
+                markBotWorkerReady(worker);
                 const link = buildGameLink(msg.hash);
                 // Link must contain numbers and be unique
                 if (/\d/.test(msg.hash) && !botLinks.has(link)) {
@@ -3370,7 +3516,7 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2) {
             }
         });
 
-        worker.send({
+        sendBotWorker(worker, {
             type: "start",
             config: {
                 id: id,
@@ -3437,8 +3583,9 @@ async function processQueue() {
 
     const isPremium = commandName === "premium-farm";
     const localAmount = amount;
+    const activeRemoteSwarms = isPremium ? await ensureRemoteSwarms() : [];
     const totalExpectedBots = isPremium
-        ? localAmount + amount * remoteSwarms.length
+        ? localAmount + amount * activeRemoteSwarms.length
         : localAmount;
 
     const terminateRow = new ActionRowBuilder().addComponents(
@@ -3595,19 +3742,13 @@ async function processQueue() {
             console.log(`[system] cleaning up session`);
             global.currentFarmSession = null;
             activeWorkers.forEach((w) => {
-                try {
-                    if (w.connected) {
-                        w.send({ type: "destroy" });
-                        setTimeout(() => {
-                            if (w.connected) w.kill("SIGKILL");
-                        }, 100);
-                    }
-                } catch (e) {}
+                shutdownBotWorker(w);
             });
 
-            remoteSwarms.forEach((swarm) => {
+            activeRemoteSwarms.forEach((swarm) => {
                 swarm.send(["B"]);
             });
+            shutdownRemoteSwarms();
 
             farmQueue.shift();
             processQueue();
@@ -3616,7 +3757,7 @@ async function processQueue() {
         if (immediate) {
             cleanup();
         } else {
-            disconnectTimeout = setTimeout(cleanup, 60000);
+            disconnectTimeout = setTimeout(cleanup, SESSION_CLEANUP_DELAY);
         }
 
         const uniqueLinks = Array.from(new Set(botLinks.values()));
@@ -3687,7 +3828,7 @@ async function processQueue() {
         console.log(
             `[system] premium spawn: ${amount} local units and ${amount} per remote`,
         );
-        remoteSwarms.forEach((swarm) => {
+        activeRemoteSwarms.forEach((swarm) => {
             swarm.send(["F", squadId, amount]);
             swarm.send(["Z", tank]);
             swarm.send(["T", "free farm: discord.gg/fQFTCMC5hY", true]);
@@ -3701,18 +3842,19 @@ async function processQueue() {
         setTimeout(() => {
             if (isFinished) return;
             const proxyIdx = i % PROXIES.length;
-            const worker = fork("index2.js", [], { silent: true });
+            const worker = createBotWorker();
             activeWorkers.push(worker);
 
             worker.on("message", (msg) => {
                 if (msg.type === "connected" || msg.type === "hash_update") {
+                    markBotWorkerReady(worker);
                     botLinks.set(i, buildGameLink(msg.hash));
                     if (msg.hash.length > initialHash.length) {
                         if (!botsDone.has(i)) {
                             botsDone.add(i);
                             updateProgress();
                         }
-                        worker.send({
+                        sendBotWorker(worker, {
                             type: "position",
                             x: targetX,
                             y: targetY,
@@ -3731,7 +3873,7 @@ async function processQueue() {
                 }
             });
 
-            worker.send({
+            sendBotWorker(worker, {
                 type: "start",
                 config: {
                     id: i,
@@ -3762,7 +3904,7 @@ async function processQueue() {
     // Progress Simulation for Remotes (Premium Only)
     if (isPremium) {
         let remoteSimulated = 0;
-        const remoteTotal = amount * remoteSwarms.length;
+        const remoteTotal = amount * activeRemoteSwarms.length;
         const progressInterval = setInterval(() => {
             if (isFinished) {
                 clearInterval(progressInterval);
