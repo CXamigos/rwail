@@ -91,69 +91,72 @@ const server = http.createServer((req, res) => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verification</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            font-family: 'Outfit', sans-serif;
+            background-color: #08080a;
+            color: #ffffff;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 24px;
             position: relative;
             overflow: hidden;
         }
-        
-        body::before {
-            content: '';
+        .glow-bg {
             position: absolute;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(102, 126, 234, 0.15) 0%, transparent 70%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(99, 102, 241, 0.05) 50%, transparent 70%);
             border-radius: 50%;
-            top: -100px;
-            left: -100px;
-            animation: float 20s infinite ease-in-out;
+            top: -200px;
+            right: -200px;
+            filter: blur(80px);
+            pointer-events: none;
         }
-        
-        body::after {
-            content: '';
+        .glow-bg-bottom {
             position: absolute;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(118, 75, 162, 0.15) 0%, transparent 70%);
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, rgba(139, 92, 246, 0.05) 50%, transparent 70%);
             border-radius: 50%;
-            bottom: -50px;
-            right: -50px;
-            animation: float 15s infinite ease-in-out reverse;
+            bottom: -150px;
+            left: -150px;
+            filter: blur(80px);
+            pointer-events: none;
         }
-        
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(50px, 50px); }
-        }
-        
         .container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 50px 40px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            background: rgba(13, 13, 17, 0.6);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 28px;
+            padding: 48px 40px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
             text-align: center;
-            max-width: 420px;
+            max-width: 440px;
             width: 100%;
             position: relative;
-            z-index: 1;
+            z-index: 2;
         }
-        
+        .logo-wrap {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 20px;
+            margin-bottom: 24px;
+        }
         h1 {
             color: #ffffff;
             margin-bottom: 8px;
@@ -161,139 +164,129 @@ const server = http.createServer((req, res) => {
             font-weight: 600;
             letter-spacing: -0.5px;
         }
-        
         .subtitle {
-            color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 40px;
-            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 36px;
+            font-size: 15px;
             font-weight: 400;
         }
-        
         .input-group {
-            margin-bottom: 24px;
+            margin-bottom: 28px;
         }
-        
         label {
             display: block;
             text-align: left;
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.6);
             font-weight: 500;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             font-size: 13px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        
-        input {
-            width: 100%;
-            padding: 16px 20px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            font-size: 18px;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            text-align: center;
-            font-weight: 600;
-            color: #ffffff;
-            transition: all 0.3s ease;
-        }
-        
-        input::placeholder {
-            color: rgba(255, 255, 255, 0.3);
-            letter-spacing: 2px;
-        }
-        
-        input:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(102, 126, 234, 0.5);
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-        }
-        
-        button {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
-            color: white;
-            border: none;
-            padding: 16px 40px;
-            font-size: 15px;
-            font-weight: 600;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
             letter-spacing: 1px;
             text-transform: uppercase;
         }
-        
+        input {
+            width: 100%;
+            padding: 18px 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            font-size: 20px;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            text-align: center;
+            font-weight: 600;
+            color: #ffffff;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+            letter-spacing: 4px;
+        }
+        input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+        }
+        button {
+            background: #ffffff;
+            color: #09090b;
+            border: none;
+            padding: 18px 40px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
         button:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.3);
-            background: linear-gradient(135deg, rgba(102, 126, 234, 1) 0%, rgba(118, 75, 162, 1) 100%);
+            box-shadow: 0 12px 24px rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.9);
         }
-        
         button:active:not(:disabled) {
             transform: translateY(0);
         }
-        
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-        
         .status {
             margin-top: 24px;
-            padding: 14px 20px;
-            border-radius: 10px;
+            padding: 16px 20px;
+            border-radius: 16px;
             font-weight: 500;
             font-size: 14px;
             display: none;
             backdrop-filter: blur(10px);
         }
-        
         .status.success {
-            background: rgba(52, 211, 153, 0.15);
-            border: 1px solid rgba(52, 211, 153, 0.3);
-            color: #6ee7b7;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #34d399;
             display: block;
         }
-        
         .status.error {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #f87171;
             display: block;
         }
-        
         .status.loading {
-            background: rgba(59, 130, 246, 0.15);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            color: #93c5fd;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
             display: block;
         }
-        
         .spinner {
             display: inline-block;
             width: 14px;
             height: 14px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 50%;
-            border-top-color: white;
+            border-top-color: currentColor;
             animation: spin 0.8s linear infinite;
             margin-right: 8px;
             vertical-align: middle;
         }
-        
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
+    <div class="glow-bg"></div>
+    <div class="glow-bg-bottom"></div>
     <div class="container">
+        <div class="logo-wrap">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#a78bfa"/>
+            </svg>
+        </div>
         <h1>Verification</h1>
         <p class="subtitle">Enter your 6-digit code</p>
-        
         <div class="input-group">
             <label for="codeInput">Code</label>
             <input 
@@ -305,110 +298,89 @@ const server = http.createServer((req, res) => {
                 autofocus
             />
         </div>
-        
-        <button id="verifyBtn" onclick="verify()">Verify Account</button>
-        
+        <button id="verifyBtn" onclick="raZor()">Verify Account</button>
         <div id="status" class="status"></div>
     </div>
-
     <script>
-        const input = document.getElementById('codeInput');
-        
-        input.addEventListener('input', (e) => {
+        const razor = document.getElementById('codeInput');
+        razor.addEventListener('input', (e) => {
             e.target.value = e.target.value.toUpperCase();
         });
-
-        input.addEventListener('keypress', (e) => {
+        razor.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                verify();
+                raZor();
             }
         });
-
-        async function verify() {
-            const btn = document.getElementById('verifyBtn');
-            const status = document.getElementById('status');
-            const code = input.value.trim();
-            
-            if (code.length !== 6) {
-                status.className = 'status error';
-                status.textContent = 'Please enter a 6-character code';
+        async function raZor() {
+            const raz_or = document.getElementById('verifyBtn');
+            const rAzor = document.getElementById('status');
+            const raZOr = razor.value.trim();
+            if (raZOr.length !== 6) {
+                rAzor.className = 'status error';
+                rAzor.textContent = 'Please enter a 6-character code';
                 return;
             }
-            
-            status.className = 'status loading';
-            status.innerHTML = '<span class="spinner"></span>Verifying...';
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span>Verifying...';
-            
+            rAzor.className = 'status loading';
+            rAzor.innerHTML = '<span class="spinner"></span>Verifying...';
+            raz_or.disabled = true;
+            raz_or.innerHTML = '<span class="spinner"></span>Verifying...';
             try {
-                const response = await fetch('/api/verify', {
+                const rAzOr = await fetch('/api/verify', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ code })
+                    body: JSON.stringify({ code: raZOr })
                 });
-                
-                const data = await response.json();
-                
-                if (response.ok && data.success) {
-                    if (data.isNewUser) {
-                        // Show leaderboard preference modal
-                        showLeaderboardModal(data.userId);
+                const raZOar = await rAzOr.json();
+                if (rAzOr.ok && raZOar.success) {
+                    if (raZOar.isNewUser) {
+                        raZOA(raZOar.userId);
                     } else {
-                        // Existing user, redirect to dashboard
-                        status.className = 'status success';
-                        status.textContent = 'Verification successful';
-                        btn.textContent = 'Verified';
-                        input.disabled = true;
-                        
+                        rAzor.className = 'status success';
+                        rAzor.textContent = 'Verification successful';
+                        raz_or.textContent = 'Verified';
+                        razor.disabled = true;
                         setTimeout(() => {
                             window.location.href = '/dashboard';
                         }, 1500);
                     }
                 } else {
-                    throw new Error(data.error || 'Verification failed');
+                    throw new Error(raZOar.error || 'Verification failed');
                 }
-            } catch (error) {
-                status.className = 'status error';
-                status.textContent = error.message;
-                btn.textContent = 'Verify Account';
-                btn.disabled = false;
+            } catch (raZOar) {
+                rAzor.className = 'status error';
+                rAzor.textContent = raZOar.message;
+                raz_or.textContent = 'Verify Account';
+                raz_or.disabled = false;
             }
         }
-        
-        function showLeaderboardModal(userId) {
+        function raZOA(razor) {
             document.querySelector('.container').style.display = 'none';
-            
-            const modal = document.createElement('div');
-            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 1000;';
-            
-            modal.innerHTML = '<div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 50px 40px; max-width: 480px; width: 90%; text-align: center;">' +
-                '<h2 style="color: #ffffff; margin-bottom: 16px; font-size: 24px; font-weight: 600;">Leaderboard Preference</h2>' +
-                '<p style="color: rgba(255, 255, 255, 0.6); margin-bottom: 32px; font-size: 14px; line-height: 1.6;">Do you want to appear on the public leaderboards? You can change this anytime in settings.</p>' +
-                '<div style="display: flex; gap: 12px;">' +
-                '<button onclick="setLeaderboardPref(\\'' + userId + '\\', true)" style="flex: 1; background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%); color: white; border: none; padding: 14px 24px; font-size: 14px; font-weight: 600; border-radius: 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;">Yes, Show Me</button>' +
-                '<button onclick="setLeaderboardPref(\\'' + userId + '\\', false)" style="flex: 1; background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); padding: 14px 24px; font-size: 14px; font-weight: 600; border-radius: 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;">No, Keep Private</button>' +
+            const raz_or = document.createElement('div');
+            raz_or.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 1000;';
+            raz_or.innerHTML = '<div style="background: rgba(13, 13, 17, 0.6); backdrop-filter: blur(32px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 28px; padding: 48px; max-width: 480px; width: 90%; text-align: center; box-shadow: 0 24px 64px rgba(0,0,0,0.6);">' +
+                '<h2 style="color: #ffffff; margin-bottom: 16px; font-size: 24px; font-weight: 600; letter-spacing: -0.5px;">Leaderboard Preference</h2>' +
+                '<p style="color: rgba(255, 255, 255, 0.5); margin-bottom: 32px; font-size: 14px; line-height: 1.6;">Do you want to appear on the public leaderboards? You can change this anytime in settings.</p>' +
+                '<div style="display: flex; gap: 16px;">' +
+                '<button onclick="rAzOr(\\'' + razor + '\\', true)" style="flex: 1; background: #ffffff; color: #000000; border: none; padding: 16px 24px; font-size: 14px; font-weight: 600; border-radius: 9999px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s;">Yes, Show Me</button>' +
+                '<button onclick="rAzOr(\\'' + razor + '\\', false)" style="flex: 1; background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.08); padding: 16px 24px; font-size: 14px; font-weight: 600; border-radius: 9999px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s;">No, Keep Private</button>' +
                 '</div></div>';
-            
-            document.body.appendChild(modal);
+            document.body.appendChild(raz_or);
         }
-        
-        async function setLeaderboardPref(userId, show) {
+        async function rAzOr(razor, raz_or) {
             try {
-                const response = await fetch('/api/leaderboard-preference', {
+                const raZOr = await fetch('/api/leaderboard-preference', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ userId, show })
+                    body: JSON.stringify({ userId: razor, show: raz_or })
                 });
-                
-                if (response.ok) {
+                if (raZOr.ok) {
                     window.location.href = '/dashboard';
                 }
-            } catch (error) {
-                console.error('Failed to set preference:', error);
+            } catch (rAzor) {
                 window.location.href = '/dashboard';
             }
         }
@@ -607,232 +579,532 @@ const server = http.createServer((req, res) => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            font-family: 'Outfit', sans-serif;
+            background-color: #08080a;
+            color: #ffffff;
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 40px 24px;
             position: relative;
             overflow-x: hidden;
         }
-        
-        body::before {
-            content: '';
+        .glow-bg {
             position: absolute;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(102, 126, 234, 0.15) 0%, transparent 70%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 65%);
             border-radius: 50%;
-            top: -100px;
+            top: -300px;
             left: -100px;
-            animation: float 20s infinite ease-in-out;
+            filter: blur(100px);
+            pointer-events: none;
+            z-index: 1;
         }
-        
-        body::after {
-            content: '';
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(118, 75, 162, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            bottom: -50px;
-            right: -50px;
-            animation: float 15s infinite ease-in-out reverse;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(50px, 50px); }
-        }
-        
         .container {
             max-width: 1200px;
             margin: 0 auto;
             position: relative;
-            z-index: 1;
+            z-index: 2;
         }
-        
-        .header {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 32px 40px;
-            margin-bottom: 24px;
+        .nav-bar {
+            background: rgba(13, 13, 17, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 16px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
-        
-        .header h1 {
-            color: #ffffff;
-            font-size: 28px;
-            font-weight: 600;
-            margin-bottom: 8px;
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-box {
+            width: 36px;
+            height: 36px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
             letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        
-        .header .username {
+        .nav-links {
+            display: flex;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 6px;
+            border-radius: 9999px;
+            gap: 4px;
+        }
+        .nav-link {
             color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 9999px;
             font-size: 14px;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            margin-bottom: 24px;
-        }
-        
-        .stat-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 28px;
-            transition: all 0.3s ease;
-        }
-        
-        .stat-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateY(-2px);
-        }
-        
-        .stat-label {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
             font-weight: 500;
+            transition: all 0.2s ease;
         }
-        
-        .stat-value {
+        .nav-link:hover {
             color: #ffffff;
+        }
+        .nav-link.active {
+            background: #ffffff;
+            color: #09090b;
+        }
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        .welcome-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .welcome-title {
             font-size: 36px;
             font-weight: 700;
             letter-spacing: -1px;
         }
-        
-        .commands-section {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 32px 40px;
+        .time-filters {
+            display: flex;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 4px;
+            border-radius: 9999px;
+            gap: 2px;
         }
-        
-        .commands-section h2 {
+        .filter-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn.active {
+            background: rgba(255, 255, 255, 0.06);
             color: #ffffff;
-            font-size: 22px;
-            font-weight: 600;
-            margin-bottom: 24px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .stat-card {
+            background: rgba(13, 13, 17, 0.6);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: 0 12px 32px rgba(139, 92, 246, 0.1);
+        }
+        .stat-header {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+        .stat-value-group {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
             letter-spacing: -0.5px;
         }
-        
-        .command-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        .stat-indicator {
+            font-size: 12px;
+            font-weight: 600;
+            color: #10b981;
+            padding: 2px 8px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 9999px;
         }
-        
-        .command-item {
+        .stat-desc {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+        .stat-bar-container {
+            width: 100%;
+            height: 24px;
             background: rgba(255, 255, 255, 0.03);
+            border-radius: 9999px;
+            overflow: hidden;
+            position: relative;
+            margin-top: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .stat-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #ec4899);
+            border-radius: 9999px;
+        }
+        .dashboard-body {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 24px;
+        }
+        @media (max-width: 960px) {
+            .dashboard-body {
+                grid-template-columns: 1fr;
+            }
+        }
+        .panel {
+            background: rgba(13, 13, 17, 0.6);
+            backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 16px 20px;
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+        }
+        .panel-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.2s ease;
+            margin-bottom: 28px;
         }
-        
-        .command-item:hover {
-            background: rgba(255, 255, 255, 0.06);
-        }
-        
-        .command-name {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 15px;
-            font-weight: 500;
-            font-family: 'Consolas', 'Monaco', monospace;
-        }
-        
-        .command-count {
-            color: rgba(102, 126, 234, 0.9);
+        .panel-title {
             font-size: 18px;
             font-weight: 600;
+            letter-spacing: -0.2px;
         }
-        
+        .usage-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .usage-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 16px;
+            transition: all 0.2s;
+        }
+        .usage-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+        .usage-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .usage-tag {
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+        .usage-tag.farm {
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        .usage-tag.premium {
+            background: rgba(139, 92, 246, 0.1);
+            color: #c084fc;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+        .usage-tag.other {
+            background: rgba(244, 63, 94, 0.1);
+            color: #fb7185;
+            border: 1px solid rgba(244, 63, 94, 0.2);
+        }
+        .usage-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.85);
+        }
+        .usage-count {
+            font-size: 16px;
+            font-weight: 600;
+            color: #a78bfa;
+        }
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 48px;
+            color: rgba(255, 255, 255, 0.35);
+        }
+        .activity-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            margin-top: 20px;
+        }
+        .activity-cell {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .activity-cell:hover {
+            border-color: rgba(139, 92, 246, 0.4);
+            transform: scale(1.1);
+        }
+        .activity-cell.lvl1 { background: rgba(139, 92, 246, 0.2); }
+        .activity-cell.lvl2 { background: rgba(139, 92, 246, 0.4); }
+        .activity-cell.lvl3 { background: rgba(139, 92, 246, 0.6); }
+        .activity-cell.lvl4 { background: rgba(139, 92, 246, 0.9); }
+        .activity-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            margin-bottom: 8px;
+            text-align: center;
             color: rgba(255, 255, 255, 0.4);
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .activity-hours {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-right: 8px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 11px;
+            text-align: right;
+            justify-content: space-between;
+        }
+        .heatmap-container {
+            display: flex;
+        }
+        .heatmap-legend {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 6px;
+            margin-top: 16px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+        .legend-box {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
         }
     </style>
 </head>
 <body>
+    <div class="glow-bg"></div>
     <div class="container">
-        <div class="header">
-            <h1>Dashboard</h1>
-            <div class="username">${userData.username}</div>
-            <div class="nav" style="display: flex; gap: 16px; margin-top: 16px; flex-wrap: wrap;">
-                <a href="/dashboard" style="color: #667eea; text-decoration: none; font-weight: 500;">Dashboard</a>
-                <a href="/leaderboards" style="color: rgba(255, 255, 255, 0.6); text-decoration: none;">Leaderboards</a>
-                <a href="/settings" style="color: rgba(255, 255, 255, 0.6); text-decoration: none;">Settings</a>
-                <a href="/logout" style="color: rgba(255, 255, 255, 0.6); text-decoration: none;">Logout</a>
+        <div class="nav-bar">
+            <div class="nav-left">
+                <div class="logo-box">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#a78bfa"/>
+                    </svg>
+                </div>
+                <div class="logo-text">Loud</div>
+            </div>
+            <div class="nav-links">
+                <a href="/dashboard" class="nav-link active">Dashboard</a>
+                <a href="/leaderboards" class="nav-link">Leaderboards</a>
+                <a href="/settings" class="nav-link">Settings</a>
+            </div>
+            <div class="nav-right">
+                <div class="icon-btn">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+                <a href="/logout" class="icon-btn" title="Logout">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                </a>
+                <div class="profile-avatar">${userData.username[0].toUpperCase()}</div>
             </div>
         </div>
-        
+
+        <div class="welcome-section">
+            <h1 class="welcome-title">Welcome back, ${userData.username}</h1>
+            <div class="time-filters">
+                <button class="filter-btn">Week</button>
+                <button class="filter-btn active">Month</button>
+                <button class="filter-btn">Year</button>
+            </div>
+        </div>
+
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-label">Total Commands</div>
-                <div class="stat-value">${totalCommands}</div>
+                <div class="stat-header">Total Commands</div>
+                <div class="stat-value-group">
+                    <div class="stat-value">${totalCommands}</div>
+                    <div class="stat-indicator">+12%</div>
+                </div>
+                <div class="stat-desc">Commands executed globally</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Total Bots Spawned</div>
-                <div class="stat-value">${totalBots.toLocaleString()}</div>
+                <div class="stat-header">Bots Spawned</div>
+                <div class="stat-value-group">
+                    <div class="stat-value">${totalBots.toLocaleString()}</div>
+                </div>
+                <div class="stat-desc">Active swarm instances</div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar" style="width: ${Math.min(100, (totalBots / 1000) * 100)}%"></div>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Most Used Command</div>
-                <div class="stat-value" style="font-size: 18px;">/${mostUsedCommand[0]} (${mostUsedCommand[1]}×)</div>
+                <div class="stat-header">Most Used</div>
+                <div class="stat-value-group">
+                    <div class="stat-value" style="font-size: 20px;">/${mostUsedCommand[0]}</div>
+                </div>
+                <div class="stat-desc">Used ${mostUsedCommand[1]} times</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Unique Commands</div>
-                <div class="stat-value">${uniqueCommands}</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Last Command</div>
-                <div class="stat-value" style="font-size: 18px;">/${lastCommand}</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Member For</div>
-                <div class="stat-value" style="font-size: 20px;">${daysSinceJoin} days</div>
+                <div class="stat-header">Member For</div>
+                <div class="stat-value-group">
+                    <div class="stat-value">${daysSinceJoin}d</div>
+                </div>
+                <div class="stat-desc">Joined ${memberSince}</div>
             </div>
         </div>
-        
-        <div class="commands-section">
-            <h2>Command Usage</h2>
-            ${commandEntries.length > 0 ? `
-                <div class="command-list">
-                    ${commandEntries
-                        .sort((a, b) => b[1] - a[1])
-                        .map(([cmd, count]) => `
-                            <div class="command-item">
-                                <div class="command-name">/${cmd}</div>
-                                <div class="command-count">${count}×</div>
-                            </div>
-                        `).join('')}
+
+        <div class="dashboard-body">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Command Usage</h2>
                 </div>
-            ` : `
-                <div class="empty-state">
-                    <p>No commands used yet</p>
+                ${commandEntries.length > 0 ? `
+                    <div class="usage-list">
+                        ${commandEntries
+                            .sort((a, b) => b[1] - a[1])
+                            .map(([cmd, count]) => {
+                                const raZorClass = cmd.includes('premium') ? 'premium' : (cmd.includes('farm') ? 'farm' : 'other');
+                                return `
+                                    <div class="usage-item">
+                                        <div class="usage-info">
+                                            <div class="usage-tag ${raZorClass}">/${cmd}</div>
+                                            <div class="usage-name">Swarm Command Handler</div>
+                                        </div>
+                                        <div class="usage-count">${count}×</div>
+                                    </div>
+                                `;
+                            }).join('')}
+                    </div>
+                ` : `
+                    <div class="empty-state">
+                        <p>No commands used yet</p>
+                    </div>
+                `}
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Activity by time</h2>
                 </div>
-            `}
+                <div class="activity-days">
+                    <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+                </div>
+                <div class="heatmap-container">
+                    <div class="activity-hours">
+                        <div>1pm</div><div>2pm</div><div>3pm</div><div>4pm</div><div>5pm</div><div>6pm</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="activity-grid">
+                            <div class="activity-cell"></div><div class="activity-cell"></div><div class="activity-cell"></div><div class="activity-cell lvl1"></div><div class="activity-cell lvl2"></div><div class="activity-cell"></div><div class="activity-cell"></div>
+                            <div class="activity-cell"></div><div class="activity-cell lvl1"></div><div class="activity-cell lvl3"></div><div class="activity-cell lvl4"></div><div class="activity-cell lvl3"></div><div class="activity-cell"></div><div class="activity-cell"></div>
+                            <div class="activity-cell lvl1"></div><div class="activity-cell lvl4"></div><div class="activity-cell lvl2"></div><div class="activity-cell lvl4"></div><div class="activity-cell lvl4"></div><div class="activity-cell lvl2"></div><div class="activity-cell"></div>
+                            <div class="activity-cell lvl2"></div><div class="activity-cell lvl3"></div><div class="activity-cell lvl4"></div><div class="activity-cell lvl4"></div><div class="activity-cell lvl3"></div><div class="activity-cell lvl1"></div><div class="activity-cell"></div>
+                            <div class="activity-cell lvl1"></div><div class="activity-cell lvl2"></div><div class="activity-cell lvl3"></div><div class="activity-cell lvl4"></div><div class="activity-cell lvl2"></div><div class="activity-cell"></div><div class="activity-cell"></div>
+                            <div class="activity-cell"></div><div class="activity-cell"></div><div class="activity-cell lvl1"></div><div class="activity-cell lvl2"></div><div class="activity-cell lvl1"></div><div class="activity-cell"></div><div class="activity-cell"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="heatmap-legend">
+                    <span>Less</span>
+                    <div class="legend-box" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);"></div>
+                    <div class="legend-box lvl1"></div>
+                    <div class="legend-box lvl2"></div>
+                    <div class="legend-box lvl3"></div>
+                    <div class="legend-box lvl4"></div>
+                    <span>More</span>
+                </div>
+            </div>
         </div>
     </div>
 </body>
@@ -866,91 +1138,221 @@ const server = http.createServer((req, res) => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            font-family: 'Outfit', sans-serif;
+            background-color: #08080a;
+            color: #ffffff;
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 40px 24px;
+            position: relative;
+            overflow-x: hidden;
         }
-        .container { max-width: 800px; margin: 0 auto; }
-        .header {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 32px 40px;
-            margin-bottom: 24px;
+        .glow-bg {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 65%);
+            border-radius: 50%;
+            top: -300px;
+            left: -100px;
+            filter: blur(100px);
+            pointer-events: none;
+            z-index: 1;
         }
-        .header h1 { color: #ffffff; font-size: 28px; margin-bottom: 16px; }
-        .nav {
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        .nav-bar {
+            background: rgba(13, 13, 17, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 16px 28px;
             display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
-        .nav a {
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-box {
+            width: 36px;
+            height: 36px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .nav-links {
+            display: flex;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 6px;
+            border-radius: 9999px;
+            gap: 4px;
+        }
+        .nav-link {
             color: rgba(255, 255, 255, 0.6);
             text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 9999px;
+            font-size: 14px;
             font-weight: 500;
-            transition: color 0.2s;
+            transition: all 0.2s ease;
         }
-        .nav a:hover, .nav a.active { color: #667eea; }
+        .nav-link:hover {
+            color: #ffffff;
+        }
+        .nav-link.active {
+            background: #ffffff;
+            color: #09090b;
+        }
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
         .section {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
+            background: rgba(13, 13, 17, 0.6);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
             padding: 32px 40px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
         }
-        .section h2 { color: #ffffff; font-size: 20px; margin-bottom: 20px; }
+        .section h2 {
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            letter-spacing: -0.5px;
+        }
         .setting-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 24px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         }
-        .setting-item:last-child { border-bottom: none; }
+        .setting-item:last-child {
+            border-bottom: none;
+        }
         .setting-label {
-            color: rgba(255, 255, 255, 0.9);
+            color: #ffffff;
             font-size: 16px;
+            font-weight: 500;
         }
         .setting-desc {
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.4);
             font-size: 13px;
-            margin-top: 4px;
+            margin-top: 6px;
         }
         .toggle {
             position: relative;
-            width: 50px;
-            height: 26px;
-            background: ${userData.showInLeaderboard ? 'linear-gradient(135deg, #667eea, #764ba2)' : 'rgba(255, 255, 255, 0.1)'};
-            border-radius: 13px;
+            width: 54px;
+            height: 30px;
+            background: ${userData.showInLeaderboard ? 'linear-gradient(135deg, #8b5cf6, #ec4899)' : 'rgba(255, 255, 255, 0.05)'};
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 9999px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .toggle-slider {
             position: absolute;
-            top: 3px;
-            left: ${userData.showInLeaderboard ? '27px' : '3px'};
+            top: 4px;
+            left: ${userData.showInLeaderboard ? '28px' : '4px'};
             width: 20px;
             height: 20px;
             background: white;
             border-radius: 50%;
-            transition: left 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
     </style>
 </head>
 <body>
+    <div class="glow-bg"></div>
     <div class="container">
-        <div class="header">
-            <h1>Settings</h1>
-            <div class="nav">
-                <a href="/dashboard">Dashboard</a>
-                <a href="/leaderboards">Leaderboards</a>
-                <a href="/settings" class="active">Settings</a>
-                <a href="/logout">Logout</a>
+        <div class="nav-bar">
+            <div class="nav-left">
+                <div class="logo-box">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#a78bfa"/>
+                    </svg>
+                </div>
+                <div class="logo-text">Loud</div>
+            </div>
+            <div class="nav-links">
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/leaderboards" class="nav-link">Leaderboards</a>
+                <a href="/settings" class="nav-link active">Settings</a>
+            </div>
+            <div class="nav-right">
+                <div class="icon-btn">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+                <a href="/logout" class="icon-btn" title="Logout">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                </a>
+                <div class="profile-avatar">${userData.username[0].toUpperCase()}</div>
             </div>
         </div>
         
@@ -961,7 +1363,7 @@ const server = http.createServer((req, res) => {
                     <div class="setting-label">Show on Leaderboards</div>
                     <div class="setting-desc">Display your stats on public leaderboards</div>
                 </div>
-                <div class="toggle" id="leaderboardToggle" onclick="toggleLeaderboard()">
+                <div class="toggle" id="leaderboardToggle" onclick="raz_or()">
                     <div class="toggle-slider"></div>
                 </div>
             </div>
@@ -969,25 +1371,22 @@ const server = http.createServer((req, res) => {
     </div>
     
     <script>
-        let showInLeaderboard = ${userData.showInLeaderboard || false};
-        
-        function toggleLeaderboard() {
-            showInLeaderboard = !showInLeaderboard;
-            const toggle = document.getElementById('leaderboardToggle');
-            const slider = toggle.querySelector('.toggle-slider');
-            
-            if (showInLeaderboard) {
-                toggle.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
-                slider.style.left = '27px';
+        let razor = ${userData.showInLeaderboard || false};
+        function raz_or() {
+            razor = !razor;
+            const raZor = document.getElementById('leaderboardToggle');
+            const rAzor = raZor.querySelector('.toggle-slider');
+            if (razor) {
+                raZor.style.background = 'linear-gradient(135deg, #8b5cf6, #ec4899)';
+                rAzor.style.left = '28px';
             } else {
-                toggle.style.background = 'rgba(255, 255, 255, 0.1)';
-                slider.style.left = '3px';
+                raZor.style.background = 'rgba(255, 255, 255, 0.05)';
+                rAzor.style.left = '4px';
             }
-            
             fetch('/api/leaderboard-preference', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: '${session.userId}', show: showInLeaderboard })
+                body: JSON.stringify({ userId: '${session.userId}', show: razor })
             });
         }
     </script>
@@ -1040,77 +1439,193 @@ const server = http.createServer((req, res) => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leaderboards</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            font-family: 'Outfit', sans-serif;
+            background-color: #08080a;
+            color: #ffffff;
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 40px 24px;
+            position: relative;
+            overflow-x: hidden;
         }
-        .container { max-width: 1000px; margin: 0 auto; }
-        .header {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 32px 40px;
-            margin-bottom: 24px;
+        .glow-bg {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 65%);
+            border-radius: 50%;
+            top: -300px;
+            left: -100px;
+            filter: blur(100px);
+            pointer-events: none;
+            z-index: 1;
         }
-        .header h1 { color: #ffffff; font-size: 28px; margin-bottom: 16px; }
-        .nav {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
         }
-        .nav a {
-            color: rgba(255, 255, 255, 0.6);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-        .nav a:hover, .nav a.active { color: #667eea; }
-        .leaderboard {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 32px 40px;
-        }
-        .leaderboard h2 { color: #ffffff; font-size: 22px; margin-bottom: 24px; }
-        .leaderboard-item {
-            display: grid;
-            grid-template-columns: 60px 1fr 150px 150px;
-            gap: 20px;
-            padding: 16px 20px;
-            background: rgba(255, 255, 255, 0.03);
+        .nav-bar {
+            background: rgba(13, 13, 17, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            margin-bottom: 12px;
+            border-radius: 24px;
+            padding: 16px 28px;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
-        .leaderboard-item.current-user {
-            background: rgba(102, 126, 234, 0.1);
-            border-color: rgba(102, 126, 234, 0.3);
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        .rank {
-            color: #667eea;
+        .logo-box {
+            width: 36px;
+            height: 36px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-text {
             font-size: 20px;
             font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .nav-links {
+            display: flex;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 6px;
+            border-radius: 9999px;
+            gap: 4px;
+        }
+        .nav-link {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 9999px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .nav-link:hover {
+            color: #ffffff;
+        }
+        .nav-link.active {
+            background: #ffffff;
+            color: #09090b;
+        }
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        .leaderboard {
+            background: rgba(13, 13, 17, 0.6);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 32px 40px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+        }
+        .leaderboard h2 {
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 28px;
+            letter-spacing: -0.5px;
+        }
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .leaderboard-item {
+            display: grid;
+            grid-template-columns: 80px 1fr 180px 180px;
+            gap: 20px;
+            padding: 18px 24px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 16px;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        .leaderboard-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+            transform: scale(1.005);
+        }
+        .leaderboard-item.current-user {
+            background: rgba(139, 92, 246, 0.08);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+        .rank {
+            font-size: 18px;
+            font-weight: 700;
+            color: #a78bfa;
         }
         .username {
-            color: rgba(255, 255, 255, 0.9);
+            color: #ffffff;
             font-size: 16px;
             font-weight: 500;
         }
         .stat {
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.4);
             font-size: 14px;
             text-align: right;
         }
         .stat-value {
-            color: #667eea;
+            color: #ffffff;
             font-weight: 600;
+            font-size: 15px;
         }
         .empty-state {
             text-align: center;
@@ -1120,32 +1635,54 @@ const server = http.createServer((req, res) => {
     </style>
 </head>
 <body>
+    <div class="glow-bg"></div>
     <div class="container">
-        <div class="header">
-            <h1>Leaderboards</h1>
-            <div class="nav">
-                <a href="/dashboard">Dashboard</a>
-                <a href="/leaderboards" class="active">Leaderboards</a>
-                <a href="/settings">Settings</a>
-                <a href="/logout">Logout</a>
+        <div class="nav-bar">
+            <div class="nav-left">
+                <div class="logo-box">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#a78bfa"/>
+                    </svg>
+                </div>
+                <div class="logo-text">Loud</div>
+            </div>
+            <div class="nav-links">
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/leaderboards" class="nav-link active">Leaderboards</a>
+                <a href="/settings" class="nav-link">Settings</a>
+            </div>
+            <div class="nav-right">
+                <div class="icon-btn">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+                <a href="/logout" class="icon-btn" title="Logout">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                </a>
+                <div class="profile-avatar">${userData.username[0].toUpperCase()}</div>
             </div>
         </div>
         
         <div class="leaderboard">
             <h2>Top Bot Spawners</h2>
-            ${leaderboard.length > 0 ? leaderboard.map((user, idx) => `
-                <div class="leaderboard-item ${user.isCurrentUser ? 'current-user' : ''}">
-                    <div class="rank">#${idx + 1}</div>
-                    <div class="username">${user.username}${user.isCurrentUser ? ' (You)' : ''}</div>
-                    <div class="stat"><span class="stat-value">${user.totalBots.toLocaleString()}</span> bots</div>
-                    <div class="stat"><span class="stat-value">${user.totalCommands}</span> commands</div>
-                </div>
-            `).join('') : `
-                <div class="empty-state">
-                    <p>No users on leaderboard yet</p>
-                    <p style="font-size: 13px; margin-top: 8px;">Enable "Show on Leaderboards" in Settings to appear here</p>
-                </div>
-            `}
+            <div class="leaderboard-list">
+                ${leaderboard.length > 0 ? leaderboard.map((user, idx) => `
+                    <div class="leaderboard-item ${user.isCurrentUser ? 'current-user' : ''}">
+                        <div class="rank">#${idx + 1}</div>
+                        <div class="username">${user.username}${user.isCurrentUser ? ' (You)' : ''}</div>
+                        <div class="stat"><span class="stat-value">${user.totalBots.toLocaleString()}</span> bots</div>
+                        <div class="stat"><span class="stat-value">${user.totalCommands}</span> commands</div>
+                    </div>
+                `).join('') : `
+                    <div class="empty-state">
+                        <p>No users on leaderboard yet</p>
+                        <p style="font-size: 13px; margin-top: 8px; color: rgba(255,255,255,0.3)">Enable "Show on Leaderboards" in Settings to appear here</p>
+                    </div>
+                `}
+            </div>
         </div>
     </div>
 </body>
