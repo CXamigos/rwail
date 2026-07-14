@@ -2479,7 +2479,7 @@ wss.on("connection", (ws) => {
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID || "1521765557064695858";
 
-const PROXIES = ["http://spjkufyo3c:bc9QQa_elQYmp63qg5@dc.decodo.com:10000"];
+const PROXIES = ["http://1fiRasl1-ttl-0:ADL35LOraUbh6fA@datacenter-ww.lightningproxies.net:1338"];
 const COOLDOWN_FILE = path.join(__dirname, "cooldowns.json");
 const VERIFIED_FILE = path.join(__dirname, "verified.txt");
 const VERIFIED_USERS_FILE = path.join(__dirname, "verified_users.json");
