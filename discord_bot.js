@@ -11,7 +11,7 @@ const {
     ButtonStyle,
 } = require("discord.js");
 const { Worker } = require("worker_threads");
-const fs = require("fs"); // ye
+const fs = require("fs");
 const path = require("path");
 const { WebSocketServer, WebSocket } = require("ws");
 const { pack, unpack } = require("msgpackr");
@@ -306,6 +306,75 @@ const server = http.createServer((req, res) => {
     try {
         const url = require("url");
         const parsedUrl = url.parse(req.url, true);
+
+        // Magic link auto-login (one-time use)
+        if (parsedUrl.pathname === "/magic" && req.method === "GET") {
+            const token = parsedUrl.query.token;
+            const result = useMagicLink(token);
+            
+            if (result) {
+                // Valid magic link - set session cookie and redirect to dashboard
+                res.writeHead(302, {
+                    Location: "/dashboard",
+                    "Set-Cookie": `session=${result.sessionToken}; HttpOnly; Secure; SameSite=Strict; Max-Age=${365 * 24 * 60 * 60}; Path=/`,
+                });
+                res.end();
+            } else {
+                // Invalid or expired magic link
+                res.writeHead(200, { "Content-Type": "text/html" });
+                res.end(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invalid Link</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        h1 { font-size: 48px; margin-bottom: 20px; }
+        p { font-size: 18px; opacity: 0.9; margin-bottom: 30px; }
+        a {
+            display: inline-block;
+            padding: 12px 30px;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        a:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚠️ Invalid Link</h1>
+        <p>This magic link has expired, been used, or is invalid.</p>
+        <p>Use <b>/dashboard</b> in Discord to get a new link.</p>
+        <a href="/verify">Return to Verification</a>
+    </div>
+</body>
+</html>
+                `);
+            }
+            return;
+        }
 
         // Serve verification page
         if (parsedUrl.pathname === "/verify" && req.method === "GET") {
@@ -2751,6 +2820,7 @@ let isProcessingQueue = false;
 
 // Verification system
 const verificationCodes = new Map(); // Map<code, { userId, username, timestamp }>
+const magicLinks = new Map(); // Map<token, { userId, username, timestamp, used }>
 
 // Session management - Load from file on startup
 function loadSessions() {
@@ -2796,6 +2866,48 @@ function validateSession(token) {
 function deleteSession(token) {
     delete activeSessions[token];
     saveSessions(activeSessions);
+}
+
+// Magic link system (one-time use auto-login)
+function generateMagicLink(userId, username) {
+    const token = require("crypto").randomBytes(32).toString("hex");
+    magicLinks.set(token, {
+        userId,
+        username,
+        timestamp: Date.now(),
+        used: false
+    });
+    
+    // Clean up expired magic links (older than 10 minutes)
+    const TEN_MINUTES = 10 * 60 * 1000;
+    for (const [existingToken, data] of magicLinks.entries()) {
+        if (Date.now() - data.timestamp > TEN_MINUTES || data.used) {
+            magicLinks.delete(existingToken);
+        }
+    }
+    
+    return token;
+}
+
+function useMagicLink(token) {
+    const linkData = magicLinks.get(token);
+    if (!linkData) return null;
+    if (linkData.used) return null;
+    if (Date.now() - linkData.timestamp > 10 * 60 * 1000) {
+        magicLinks.delete(token);
+        return null;
+    }
+    
+    // Mark as used
+    linkData.used = true;
+    
+    // Create session
+    const sessionToken = createSession(linkData.userId, linkData.username);
+    
+    // Delete magic link
+    magicLinks.delete(token);
+    
+    return { sessionToken, userId: linkData.userId, username: linkData.username };
 }
 
 // Verified users system
@@ -3406,33 +3518,60 @@ client.on("interactionCreate", async (interaction) => {
     }
 
     if (interaction.commandName === "dashboard") {
-        // Generate dashboard URL (no user ID needed - uses session)
-        let dashboardUrl;
-        if (process.env.RAILWAY_PUBLIC_DOMAIN) {
-            dashboardUrl = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/dashboard`;
-        } else if (process.env.RENDER_EXTERNAL_URL) {
-            dashboardUrl = `${process.env.RENDER_EXTERNAL_URL}/dashboard`;
-        } else if (process.env.REPLIT_DEV_DOMAIN) {
-            dashboardUrl = `https://${process.env.REPLIT_DEV_DOMAIN}/dashboard`;
-        } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
-            dashboardUrl = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co/dashboard`;
-        } else {
-            dashboardUrl = `http://localhost:${PORT}/dashboard`;
+        const userId = interaction.user.id;
+        const username = interaction.user.tag;
+        
+        // Check if user is verified
+        if (!isUserVerified(userId)) {
+            return await interaction.reply({
+                content: "```\nerror: [ verification required ]\nreason: [ use /verify to verify your account ]\n```",
+                ephemeral: true,
+            });
         }
+        
+        // Generate one-time magic link for auto-login
+        const magicToken = generateMagicLink(userId, username);
+        
+        // Generate dashboard URLs
+        let baseUrl;
+        if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+            baseUrl = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
+        } else if (process.env.RENDER_EXTERNAL_URL) {
+            baseUrl = `${process.env.RENDER_EXTERNAL_URL}`;
+        } else if (process.env.REPLIT_DEV_DOMAIN) {
+            baseUrl = `https://${process.env.REPLIT_DEV_DOMAIN}`;
+        } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
+            baseUrl = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
+        } else {
+            baseUrl = `http://localhost:${PORT}`;
+        }
+        
+        const dashboardUrl = `${baseUrl}/dashboard`;
+        const magicUrl = `${baseUrl}/magic?token=${magicToken}`;
 
         const dashboardEmbed = new EmbedBuilder()
             .setColor(0x667eea)
-            .setTitle("Your Dashboard")
-            .setDescription("View your command usage statistics and activity.")
+            .setTitle("🎮 Your Dashboard")
+            .setDescription("Access your command usage statistics and activity.")
             .addFields({
-                name: "Access Dashboard",
-                value: `[Click here to open dashboard](${dashboardUrl})`,
+                name: "✨ One-Click Login",
+                value: "Click the button below for instant access (link expires in 10 minutes)",
                 inline: false,
             })
+            .setFooter({ text: "Your session lasts 1 year • Secure & private" })
             .setTimestamp();
+
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setLabel("Open Dashboard")
+                .setStyle(ButtonStyle.Link)
+                .setURL(magicUrl)
+                .setEmoji("🚀")
+        );
 
         return await interaction.reply({
             embeds: [dashboardEmbed],
+            components: [row],
             ephemeral: true,
         });
     }
@@ -3518,7 +3657,7 @@ client.on("interactionCreate", async (interaction) => {
             : "Auto4";
         const amount =
             isFarm && isBypassUser
-                ? interaction.options.getInteger("amount") || 10
+                ? interaction.options.getInteger("amount") || 10 // 10 boys
                 : 10;
 
         const initialHash = hashInput.startsWith("#")
@@ -4123,7 +4262,7 @@ async function processQueue() {
 
 async function startBot() {
     try {
-        console.log(`[system] attempting discord login...`); // ye
+        console.log(`[system] attempting discord login...`);
         await client.login(TOKEN);
     } catch (err) {
         console.log(`[system] login failure: [ ${err.message} ]`);
