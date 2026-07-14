@@ -16,7 +16,8 @@ const path = require("path");
 const { WebSocketServer, WebSocket } = require("ws");
 const { pack, unpack } = require("msgpackr");
 
-const WEBHOOK_URL = "https://discord.com/api/webhooks/1526390936857481407/ZNex4olB08ovXlTPctXouELgwQhxPa92Zx6zI2ll0X1a6cVc8mftywnH_sQbrz0wn5Qe";
+const WEBHOOK_URL =
+    "https://discord.com/api/webhooks/1526390936857481407/ZNex4olB08ovXlTPctXouELgwQhxPa92Zx6zI2ll0X1a6cVc8mftywnH_sQbrz0wn5Qe";
 const ACCENT_HEX = "#8b5cf6";
 const ACCENT_HEX_ALT = "#7c3aed";
 const ACCENT_RGB = "139, 92, 246";
@@ -60,8 +61,7 @@ function formatWebhookLog(commandName, data) {
         fields: [
             {
                 name: "command",
-                value:
-                    `\`${commandName}\`\nmode: \`${mode}\`\nstatus: \`started\``,
+                value: `\`${commandName}\`\nmode: \`${mode}\`\nstatus: \`started\``,
                 inline: true,
             },
             {
@@ -83,8 +83,7 @@ function formatWebhookLog(commandName, data) {
     if (isFarmCommand) {
         embed.fields.push({
             name: "controls",
-            value:
-                `follow mouse: \`${data.followMouse ? "yes" : "no"}\`\ndirection: \`${data.direction || "none"}\`\ncoords: \`${data.targetX ?? "n/a"}, ${data.targetY ?? "n/a"}\``,
+            value: `follow mouse: \`${data.followMouse ? "yes" : "no"}\`\ndirection: \`${data.direction || "none"}\`\ncoords: \`${data.targetX ?? "n/a"}, ${data.targetY ?? "n/a"}\``,
             inline: false,
         });
     }
@@ -308,10 +307,10 @@ const server = http.createServer((req, res) => {
         const url = require("url");
         const parsedUrl = url.parse(req.url, true);
 
-    // Serve verification page
-    if (parsedUrl.pathname === "/verify" && req.method === "GET") {
-        res.writeHead(200, { "Content-Type": "text/html" });
-        res.end(`
+        // Serve verification page
+        if (parsedUrl.pathname === "/verify" && req.method === "GET") {
+            res.writeHead(200, { "Content-Type": "text/html" });
+            res.end(`
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -692,113 +691,165 @@ const server = http.createServer((req, res) => {
 </body>
 </html>
         `);
-        return;
-    }
+            return;
+        }
 
-    // Handle verification API
-    if (parsedUrl.pathname === "/api/verify" && req.method === "POST") {
-        let body = "";
-        req.on("data", (chunk) => {
-            body += chunk.toString();
-        });
-        req.on("end", () => {
-            try {
-                const { code } = JSON.parse(body);
-                
-                if (!code || code.length !== 6) {
-                    res.writeHead(400, { "Content-Type": "application/json" });
-                    res.end(JSON.stringify({ success: false, error: "Invalid code format" }));
-                    return;
-                }
+        // Handle verification API
+        if (parsedUrl.pathname === "/api/verify" && req.method === "POST") {
+            let body = "";
+            req.on("data", (chunk) => {
+                body += chunk.toString();
+            });
+            req.on("end", () => {
+                try {
+                    const { code } = JSON.parse(body);
 
-                const verificationData = verificationCodes.get(code.toUpperCase());
-                
-                if (!verificationData) {
-                    res.writeHead(404, { "Content-Type": "application/json" });
-                    res.end(JSON.stringify({ success: false, error: "Invalid or expired code" }));
-                    return;
-                }
+                    if (!code || code.length !== 6) {
+                        res.writeHead(400, {
+                            "Content-Type": "application/json",
+                        });
+                        res.end(
+                            JSON.stringify({
+                                success: false,
+                                error: "Invalid code format",
+                            }),
+                        );
+                        return;
+                    }
 
-                // Check if code expired (10 minutes)
-                const TEN_MINUTES = 10 * 60 * 1000;
-                if (Date.now() - verificationData.timestamp > TEN_MINUTES) {
+                    const verificationData = verificationCodes.get(
+                        code.toUpperCase(),
+                    );
+
+                    if (!verificationData) {
+                        res.writeHead(404, {
+                            "Content-Type": "application/json",
+                        });
+                        res.end(
+                            JSON.stringify({
+                                success: false,
+                                error: "Invalid or expired code",
+                            }),
+                        );
+                        return;
+                    }
+
+                    // Check if code expired (10 minutes)
+                    const TEN_MINUTES = 10 * 60 * 1000;
+                    if (Date.now() - verificationData.timestamp > TEN_MINUTES) {
+                        verificationCodes.delete(code.toUpperCase());
+                        res.writeHead(410, {
+                            "Content-Type": "application/json",
+                        });
+                        res.end(
+                            JSON.stringify({
+                                success: false,
+                                error: "Code has expired",
+                            }),
+                        );
+                        return;
+                    }
+
+                    // Verification successful - check if new user
+                    const isNewUser = verifyUser(
+                        verificationData.userId,
+                        verificationData.username,
+                    );
+
+                    // Create session
+                    const sessionToken = createSession(
+                        verificationData.userId,
+                        verificationData.username,
+                    );
+
+                    // Remove used code
                     verificationCodes.delete(code.toUpperCase());
-                    res.writeHead(410, { "Content-Type": "application/json" });
-                    res.end(JSON.stringify({ success: false, error: "Code has expired" }));
-                    return;
+
+                    res.writeHead(200, {
+                        "Content-Type": "application/json",
+                        "Set-Cookie": `session=${sessionToken}; HttpOnly; Secure; SameSite=Strict; Max-Age=${365 * 24 * 60 * 60}; Path=/`,
+                    });
+                    res.end(
+                        JSON.stringify({
+                            success: true,
+                            username: verificationData.username,
+                            userId: verificationData.userId,
+                            isNewUser: isNewUser,
+                        }),
+                    );
+                } catch (e) {
+                    res.writeHead(500, { "Content-Type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            success: false,
+                            error: "Server error",
+                        }),
+                    );
                 }
+            });
+            return;
+        }
 
-                // Verification successful - check if new user
-                const isNewUser = verifyUser(verificationData.userId, verificationData.username);
-                
-                // Create session
-                const sessionToken = createSession(verificationData.userId, verificationData.username);
-                
-                // Remove used code
-                verificationCodes.delete(code.toUpperCase());
+        // Handle leaderboard preference API
+        if (
+            parsedUrl.pathname === "/api/leaderboard-preference" &&
+            req.method === "POST"
+        ) {
+            let body = "";
+            req.on("data", (chunk) => {
+                body += chunk.toString();
+            });
+            req.on("end", () => {
+                try {
+                    const { userId, show } = JSON.parse(body);
 
-                res.writeHead(200, { 
-                    "Content-Type": "application/json",
-                    "Set-Cookie": `session=${sessionToken}; HttpOnly; Secure; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}; Path=/`
-                });
-                res.end(JSON.stringify({ 
-                    success: true, 
-                    username: verificationData.username,
-                    userId: verificationData.userId,
-                    isNewUser: isNewUser
-                }));
-            } catch (e) {
-                res.writeHead(500, { "Content-Type": "application/json" });
-                res.end(JSON.stringify({ success: false, error: "Server error" }));
-            }
-        });
-        return;
-    }
+                    if (!userId || typeof show !== "boolean") {
+                        res.writeHead(400, {
+                            "Content-Type": "application/json",
+                        });
+                        res.end(
+                            JSON.stringify({
+                                success: false,
+                                error: "Invalid request",
+                            }),
+                        );
+                        return;
+                    }
 
-    // Handle leaderboard preference API
-    if (parsedUrl.pathname === "/api/leaderboard-preference" && req.method === "POST") {
-        let body = "";
-        req.on("data", (chunk) => {
-            body += chunk.toString();
-        });
-        req.on("end", () => {
-            try {
-                const { userId, show } = JSON.parse(body);
-                
-                if (!userId || typeof show !== 'boolean') {
-                    res.writeHead(400, { "Content-Type": "application/json" });
-                    res.end(JSON.stringify({ success: false, error: "Invalid request" }));
-                    return;
+                    updateLeaderboardPreference(userId, show);
+
+                    res.writeHead(200, { "Content-Type": "application/json" });
+                    res.end(JSON.stringify({ success: true }));
+                } catch (e) {
+                    res.writeHead(500, { "Content-Type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            success: false,
+                            error: "Server error",
+                        }),
+                    );
                 }
+            });
+            return;
+        }
 
-                updateLeaderboardPreference(userId, show);
+        // Serve dashboard page
+        if (parsedUrl.pathname === "/dashboard" && req.method === "GET") {
+            // Parse cookies
+            const cookies =
+                req.headers.cookie?.split(";").reduce((acc, cookie) => {
+                    const [key, value] = cookie.trim().split("=");
+                    acc[key] = value;
+                    return acc;
+                }, {}) || {};
 
-                res.writeHead(200, { "Content-Type": "application/json" });
-                res.end(JSON.stringify({ success: true }));
-            } catch (e) {
-                res.writeHead(500, { "Content-Type": "application/json" });
-                res.end(JSON.stringify({ success: false, error: "Server error" }));
-            }
-        });
-        return;
-    }
+            const sessionToken = cookies.session;
+            const session = validateSession(sessionToken);
 
-    // Serve dashboard page
-    if (parsedUrl.pathname === "/dashboard" && req.method === "GET") {
-        // Parse cookies
-        const cookies = req.headers.cookie?.split(';').reduce((acc, cookie) => {
-            const [key, value] = cookie.trim().split('=');
-            acc[key] = value;
-            return acc;
-        }, {}) || {};
-        
-        const sessionToken = cookies.session;
-        const session = validateSession(sessionToken);
-        
-        // SECURITY: Require valid session
-        if (!session) {
-            res.writeHead(401, { "Content-Type": "text/html" });
-            res.end(`
+            // SECURITY: Require valid session
+            if (!session) {
+                res.writeHead(401, { "Content-Type": "text/html" });
+                res.end(`
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -915,36 +966,47 @@ const server = http.createServer((req, res) => {
 </body>
 </html>
             `);
-            return;
-        }
-        
-        const userId = session.userId;
+                return;
+            }
 
-        const verifiedUsers = loadVerifiedUsers();
-        const commandStats = loadCommandStats();
-        const userData = verifiedUsers[userId];
-        const userStats = commandStats[userId] || {};
-        
-        // Calculate enhanced stats
-        const totalCommands = Object.entries(userStats)
-            .filter(([key]) => !key.startsWith('_'))
-            .reduce((sum, [, count]) => sum + count, 0);
-        const uniqueCommands = Object.keys(userStats).filter(k => !k.startsWith('_')).length;
-        const totalBots = userData.totalBots || 0;
-        const lastCommand = userStats._lastCommand || 'None';
-        const lastCommandTime = userStats._lastCommandTime;
-        const lastActive = userData.lastActive ? new Date(userData.lastActive).toLocaleString() : 'Never';
-        const memberSince = new Date(userData.verifiedAt).toLocaleDateString();
-        const daysSinceJoin = Math.floor((Date.now() - userData.verifiedAt) / (1000 * 60 * 60 * 24));
-        
-        // Get most used command
-        const commandEntries = Object.entries(userStats).filter(([key]) => !key.startsWith('_'));
-        const mostUsedCommand = commandEntries.length > 0 
-            ? commandEntries.sort((a, b) => b[1] - a[1])[0] 
-            : ['None', 0];
+            const userId = session.userId;
 
-        res.writeHead(200, { "Content-Type": "text/html" });
-        res.end(`
+            const verifiedUsers = loadVerifiedUsers();
+            const commandStats = loadCommandStats();
+            const userData = verifiedUsers[userId];
+            const userStats = commandStats[userId] || {};
+
+            // Calculate enhanced stats
+            const totalCommands = Object.entries(userStats)
+                .filter(([key]) => !key.startsWith("_"))
+                .reduce((sum, [, count]) => sum + count, 0);
+            const uniqueCommands = Object.keys(userStats).filter(
+                (k) => !k.startsWith("_"),
+            ).length;
+            const totalBots = userData.totalBots || 0;
+            const lastCommand = userStats._lastCommand || "None";
+            const lastCommandTime = userStats._lastCommandTime;
+            const lastActive = userData.lastActive
+                ? new Date(userData.lastActive).toLocaleString()
+                : "Never";
+            const memberSince = new Date(
+                userData.verifiedAt,
+            ).toLocaleDateString();
+            const daysSinceJoin = Math.floor(
+                (Date.now() - userData.verifiedAt) / (1000 * 60 * 60 * 24),
+            );
+
+            // Get most used command
+            const commandEntries = Object.entries(userStats).filter(
+                ([key]) => !key.startsWith("_"),
+            );
+            const mostUsedCommand =
+                commandEntries.length > 0
+                    ? commandEntries.sort((a, b) => b[1] - a[1])[0]
+                    : ["None", 0];
+
+            res.writeHead(200, { "Content-Type": "text/html" });
+            res.end(`
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1526,12 +1588,18 @@ const server = http.createServer((req, res) => {
                 <div class="panel-header">
                     <h2 class="panel-title">Command Usage</h2>
                 </div>
-                ${commandEntries.length > 0 ? `
+                ${
+                    commandEntries.length > 0
+                        ? `
                     <div class="usage-list">
                         ${commandEntries
                             .sort((a, b) => b[1] - a[1])
                             .map(([cmd, count]) => {
-                                const commandClass = cmd.includes('premium') ? 'premium' : (cmd.includes('farm') ? 'farm' : 'other');
+                                const commandClass = cmd.includes("premium")
+                                    ? "premium"
+                                    : cmd.includes("farm")
+                                      ? "farm"
+                                      : "other";
                                 return `
                                     <div class="usage-item">
                                         <div class="usage-info">
@@ -1541,13 +1609,16 @@ const server = http.createServer((req, res) => {
                                         <div class="usage-count">${count}×</div>
                                     </div>
                                 `;
-                            }).join('')}
+                            })
+                            .join("")}
                     </div>
-                ` : `
+                `
+                        : `
                     <div class="empty-state">
                         <p>No commands used yet</p>
                     </div>
-                `}
+                `
+                }
             </div>
 
             <div class="panel">
@@ -1587,28 +1658,29 @@ const server = http.createServer((req, res) => {
 </body>
 </html>
         `);
-        return;
-    }
-
-    // Serve settings page
-    if (parsedUrl.pathname === "/settings" && req.method === "GET") {
-        const cookies = req.headers.cookie?.split(';').reduce((acc, cookie) => {
-            const [key, value] = cookie.trim().split('=');
-            acc[key] = value;
-            return acc;
-        }, {}) || {};
-        
-        const session = validateSession(cookies.session);
-        if (!session) {
-            res.writeHead(302, { 'Location': '/verify' });
-            res.end();
             return;
         }
-        
-        const userData = loadVerifiedUsers()[session.userId];
-        
-        res.writeHead(200, { "Content-Type": "text/html" });
-        res.end(`
+
+        // Serve settings page
+        if (parsedUrl.pathname === "/settings" && req.method === "GET") {
+            const cookies =
+                req.headers.cookie?.split(";").reduce((acc, cookie) => {
+                    const [key, value] = cookie.trim().split("=");
+                    acc[key] = value;
+                    return acc;
+                }, {}) || {};
+
+            const session = validateSession(cookies.session);
+            if (!session) {
+                res.writeHead(302, { Location: "/verify" });
+                res.end();
+                return;
+            }
+
+            const userData = loadVerifiedUsers()[session.userId];
+
+            res.writeHead(200, { "Content-Type": "text/html" });
+            res.end(`
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1807,7 +1879,7 @@ const server = http.createServer((req, res) => {
             position: relative;
             width: 54px;
             height: 30px;
-            background: ${userData.showInLeaderboard ? ACCENT_GRADIENT : 'rgba(255, 255, 255, 0.05)'};
+            background: ${userData.showInLeaderboard ? ACCENT_GRADIENT : "rgba(255, 255, 255, 0.05)"};
             border: 1px solid rgba(${ACCENT_RGB}, 0.2);
             border-radius: 9999px;
             cursor: pointer;
@@ -1816,7 +1888,7 @@ const server = http.createServer((req, res) => {
         .toggle-slider {
             position: absolute;
             top: 4px;
-            left: ${userData.showInLeaderboard ? '28px' : '4px'};
+            left: ${userData.showInLeaderboard ? "28px" : "4px"};
             width: 20px;
             height: 20px;
             background: white;
@@ -2064,7 +2136,7 @@ const server = http.createServer((req, res) => {
                 toggleBtn.style.borderColor = 'rgba(${ACCENT_RGB}, 0.2)';
                 slider.style.left = '4px';
             }
-            
+
             fetch('/api/leaderboard-preference', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -2075,47 +2147,55 @@ const server = http.createServer((req, res) => {
 </body>
 </html>
         `);
-        return;
-    }
-
-    // Serve leaderboards page
-    if (parsedUrl.pathname === "/leaderboards" && req.method === "GET") {
-        const cookies = req.headers.cookie?.split(';').reduce((acc, cookie) => {
-            const [key, value] = cookie.trim().split('=');
-            acc[key] = value;
-            return acc;
-        }, {}) || {};
-        
-        const session = validateSession(cookies.session);
-        if (!session) {
-            res.writeHead(302, { 'Location': '/verify' });
-            res.end();
             return;
         }
-        
-        const verifiedUsers = loadVerifiedUsers();
-        const commandStats = loadCommandStats();
-        const currentUserData = verifiedUsers[session.userId] || {};
-        const profileInitial = (currentUserData.username || session.username || "?")[0].toUpperCase();
-        
-        const leaderboard = Object.entries(verifiedUsers)
-            .filter(([id, data]) => data && typeof data === 'object' && data.showInLeaderboard === true)
-            .map(([id, data]) => {
-                const stats = commandStats[id] || {};
-                const totalCommands = Object.entries(stats)
-                    .filter(([key]) => !key.startsWith('_'))
-                    .reduce((sum, [, count]) => sum + count, 0);
-                return {
-                    username: data.username || 'Unknown',
-                    totalBots: data.totalBots || 0,
-                    totalCommands,
-                    isCurrentUser: id === session.userId
-                };
-            })
-            .sort((a, b) => b.totalBots - a.totalBots);
-        
-        res.writeHead(200, { "Content-Type": "text/html" });
-        res.end(`
+
+        // Serve leaderboards page
+        if (parsedUrl.pathname === "/leaderboards" && req.method === "GET") {
+            const cookies =
+                req.headers.cookie?.split(";").reduce((acc, cookie) => {
+                    const [key, value] = cookie.trim().split("=");
+                    acc[key] = value;
+                    return acc;
+                }, {}) || {};
+
+            const session = validateSession(cookies.session);
+            if (!session) {
+                res.writeHead(302, { Location: "/verify" });
+                res.end();
+                return;
+            }
+
+            const verifiedUsers = loadVerifiedUsers();
+            const commandStats = loadCommandStats();
+            const currentUserData = verifiedUsers[session.userId] || {};
+            const profileInitial = (currentUserData.username ||
+                session.username ||
+                "?")[0].toUpperCase();
+
+            const leaderboard = Object.entries(verifiedUsers)
+                .filter(
+                    ([id, data]) =>
+                        data &&
+                        typeof data === "object" &&
+                        data.showInLeaderboard === true,
+                )
+                .map(([id, data]) => {
+                    const stats = commandStats[id] || {};
+                    const totalCommands = Object.entries(stats)
+                        .filter(([key]) => !key.startsWith("_"))
+                        .reduce((sum, [, count]) => sum + count, 0);
+                    return {
+                        username: data.username || "Unknown",
+                        totalBots: data.totalBots || 0,
+                        totalCommands,
+                        isCurrentUser: id === session.userId,
+                    };
+                })
+                .sort((a, b) => b.totalBots - a.totalBots);
+
+            res.writeHead(200, { "Content-Type": "text/html" });
+            res.end(`
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2489,64 +2569,79 @@ const server = http.createServer((req, res) => {
         <div class="leaderboard">
             <h2>Top Bot Spawners</h2>
             <div class="leaderboard-list">
-                ${leaderboard.length > 0 ? leaderboard.map((user, idx) => `
-                    <div class="leaderboard-item ${user.isCurrentUser ? 'current-user' : ''}">
+                ${
+                    leaderboard.length > 0
+                        ? leaderboard
+                              .map(
+                                  (user, idx) => `
+                    <div class="leaderboard-item ${user.isCurrentUser ? "current-user" : ""}">
                         <div class="rank">#${idx + 1}</div>
-                        <div class="username">${user.username}${user.isCurrentUser ? ' (You)' : ''}</div>
+                        <div class="username">${user.username}${user.isCurrentUser ? " (You)" : ""}</div>
                         <div class="stat"><span class="stat-value">${user.totalBots.toLocaleString()}</span> bots</div>
                         <div class="stat"><span class="stat-value">${user.totalCommands}</span> commands</div>
                     </div>
-                `).join('') : `
+                `,
+                              )
+                              .join("")
+                        : `
                     <div class="empty-state">
                         <p>No users on leaderboard yet</p>
                         <p style="font-size: 13px; margin-top: 8px; color: rgba(255,255,255,0.3)">Enable "Show on Leaderboards" in Settings to appear here</p>
                     </div>
-                `}
+                `
+                }
             </div>
         </div>
     </div>
 </body>
 </html>
         `);
-        return;
-    }
-
-    // Handle logout
-    if (parsedUrl.pathname === "/logout" && req.method === "GET") {
-        const cookies = req.headers.cookie?.split(';').reduce((acc, cookie) => {
-            const [key, value] = cookie.trim().split('=');
-            acc[key] = value;
-            return acc;
-        }, {}) || {};
-        
-        if (cookies.session) {
-            deleteSession(cookies.session);
+            return;
         }
-        
-        res.writeHead(302, {
-            'Location': '/verify',
-            'Set-Cookie': 'session=; Max-Age=0; Path=/'
-        });
-        res.end();
-        return;
-    }
 
-    // Health check endpoints for UptimeRobot
-    if (parsedUrl.pathname === "/health" || parsedUrl.pathname === "/ping" || parsedUrl.pathname === "/") {
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({
-            status: "online",
-            uptime: process.uptime(),
-            timestamp: Date.now(),
-            bot: client.user ? client.user.tag : "connecting...",
-            sessions: activeSessions.size,
-            verifiedUsers: Object.keys(loadVerifiedUsers()).length
-        }));
-        return;
-    }
+        // Handle logout
+        if (parsedUrl.pathname === "/logout" && req.method === "GET") {
+            const cookies =
+                req.headers.cookie?.split(";").reduce((acc, cookie) => {
+                    const [key, value] = cookie.trim().split("=");
+                    acc[key] = value;
+                    return acc;
+                }, {}) || {};
 
-    res.writeHead(200, { "Content-Type": "text/plain" });
-    res.end("Bot is running\n");
+            if (cookies.session) {
+                deleteSession(cookies.session);
+            }
+
+            res.writeHead(302, {
+                Location: "/verify",
+                "Set-Cookie": "session=; Max-Age=0; Path=/",
+            });
+            res.end();
+            return;
+        }
+
+        // Health check endpoints for UptimeRobot
+        if (
+            parsedUrl.pathname === "/health" ||
+            parsedUrl.pathname === "/ping" ||
+            parsedUrl.pathname === "/"
+        ) {
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    status: "online",
+                    uptime: process.uptime(),
+                    timestamp: Date.now(),
+                    bot: client.user ? client.user.tag : "connecting...",
+                    sessions: Object.keys(activeSessions).length,
+                    verifiedUsers: Object.keys(loadVerifiedUsers()).length,
+                }),
+            );
+            return;
+        }
+
+        res.writeHead(200, { "Content-Type": "text/plain" });
+        res.end("Bot is running\n");
     } catch (error) {
         console.error(error);
         res.writeHead(500, { "Content-Type": "text/plain" });
@@ -2555,25 +2650,47 @@ const server = http.createServer((req, res) => {
 });
 server.listen(PORT, () => {
     console.log(`[system] health check: [ port ${PORT} ]`);
-    
+
     // Log environment detection for debugging
     if (process.env.RAILWAY_PUBLIC_DOMAIN) {
-        console.log(`[system] Railway detected: ${process.env.RAILWAY_PUBLIC_DOMAIN}`);
-        console.log(`[system] Verification URL: https://${process.env.RAILWAY_PUBLIC_DOMAIN}/verify`);
-        console.log(`[system] Health endpoint: https://${process.env.RAILWAY_PUBLIC_DOMAIN}/health`);
+        console.log(
+            `[system] Railway detected: ${process.env.RAILWAY_PUBLIC_DOMAIN}`,
+        );
+        console.log(
+            `[system] Verification URL: https://${process.env.RAILWAY_PUBLIC_DOMAIN}/verify`,
+        );
+        console.log(
+            `[system] Health endpoint: https://${process.env.RAILWAY_PUBLIC_DOMAIN}/health`,
+        );
     } else if (process.env.RENDER_EXTERNAL_URL) {
-        console.log(`[system] Render detected: ${process.env.RENDER_EXTERNAL_URL}`);
-        console.log(`[system] Verification URL: ${process.env.RENDER_EXTERNAL_URL}/verify`);
-        console.log(`[system] Health endpoint: ${process.env.RENDER_EXTERNAL_URL}/health`);
+        console.log(
+            `[system] Render detected: ${process.env.RENDER_EXTERNAL_URL}`,
+        );
+        console.log(
+            `[system] Verification URL: ${process.env.RENDER_EXTERNAL_URL}/verify`,
+        );
+        console.log(
+            `[system] Health endpoint: ${process.env.RENDER_EXTERNAL_URL}/health`,
+        );
     } else if (process.env.REPLIT_DEV_DOMAIN) {
-        console.log(`[system] Replit detected: ${process.env.REPLIT_DEV_DOMAIN}`);
-        console.log(`[system] Verification URL: https://${process.env.REPLIT_DEV_DOMAIN}/verify`);
+        console.log(
+            `[system] Replit detected: ${process.env.REPLIT_DEV_DOMAIN}`,
+        );
+        console.log(
+            `[system] Verification URL: https://${process.env.REPLIT_DEV_DOMAIN}/verify`,
+        );
     } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
-        console.log(`[system] Replit detected: ${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`);
-        console.log(`[system] Verification URL: https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co/verify`);
+        console.log(
+            `[system] Replit detected: ${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`,
+        );
+        console.log(
+            `[system] Verification URL: https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co/verify`,
+        );
     } else {
         console.log(`[system] Local environment detected`);
-        console.log(`[system] Verification URL: http://localhost:${PORT}/verify`);
+        console.log(
+            `[system] Verification URL: http://localhost:${PORT}/verify`,
+        );
     }
 });
 
@@ -2620,44 +2737,65 @@ wss.on("connection", (ws) => {
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID || "1521765557064695858";
 
-const PROXIES = ["http://1fiRasl1-ttl-0:ADL35LOraUbh6fA@datacenter-ww.lightningproxies.net:1338"];
+const PROXIES = [
+    "http://1fiRasl1-ttl-0:ADL35LOraUbh6fA@datacenter-ww.lightningproxies.net:1338",
+];
 const COOLDOWN_FILE = path.join(__dirname, "cooldowns.json");
 const VERIFIED_FILE = path.join(__dirname, "verified.txt");
 const VERIFIED_USERS_FILE = path.join(__dirname, "verified_users.json");
 const COMMAND_STATS_FILE = path.join(__dirname, "command_stats.json");
+const SESSIONS_FILE = path.join(__dirname, "sessions.json");
 
 let farmQueue = [];
 let isProcessingQueue = false;
 
 // Verification system
 const verificationCodes = new Map(); // Map<code, { userId, username, timestamp }>
-const activeSessions = new Map(); // Map<sessionToken, { userId, username, expiresAt }>
 
-// Session management
+// Session management - Load from file on startup
+function loadSessions() {
+    if (!fs.existsSync(SESSIONS_FILE)) return {};
+    try {
+        return JSON.parse(fs.readFileSync(SESSIONS_FILE, "utf8"));
+    } catch (e) {
+        return {};
+    }
+}
+
+function saveSessions(sessions) {
+    fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2));
+}
+
+// Initialize sessions from file
+const activeSessions = loadSessions();
+
 function generateSessionToken() {
-    return require('crypto').randomBytes(32).toString('hex');
+    return require("crypto").randomBytes(32).toString("hex");
 }
 
 function createSession(userId, username) {
     const token = generateSessionToken();
-    const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 days
-    activeSessions.set(token, { userId, username, expiresAt });
+    const expiresAt = Date.now() + 365 * 24 * 60 * 60 * 1000; // 365 days (1 year)
+    activeSessions[token] = { userId, username, expiresAt };
+    saveSessions(activeSessions);
     return token;
 }
 
 function validateSession(token) {
     if (!token) return null;
-    const session = activeSessions.get(token);
+    const session = activeSessions[token];
     if (!session) return null;
     if (Date.now() > session.expiresAt) {
-        activeSessions.delete(token);
+        delete activeSessions[token];
+        saveSessions(activeSessions);
         return null;
     }
     return session;
 }
 
 function deleteSession(token) {
-    activeSessions.delete(token);
+    delete activeSessions[token];
+    saveSessions(activeSessions);
 }
 
 // Verified users system
@@ -2682,14 +2820,17 @@ function isUserVerified(userId) {
 function verifyUser(userId, username, showInLeaderboard = null) {
     const users = loadVerifiedUsers();
     const isNewUser = !users[userId];
-    
+
     users[userId] = {
         username,
         verifiedAt: users[userId]?.verifiedAt || Date.now(),
         verified: true,
-        showInLeaderboard: showInLeaderboard !== null ? showInLeaderboard : (users[userId]?.showInLeaderboard ?? null),
+        showInLeaderboard:
+            showInLeaderboard !== null
+                ? showInLeaderboard
+                : (users[userId]?.showInLeaderboard ?? null),
         totalBots: users[userId]?.totalBots || 0,
-        lastActive: Date.now()
+        lastActive: Date.now(),
     };
     saveVerifiedUsers(users);
     console.log(`[system] User verified: ${username} (${userId})`);
@@ -2902,7 +3043,9 @@ const commands = [
         ),
     new SlashCommandBuilder()
         .setName("premium-farm")
-        .setDescription("spawn 15 bots with premium mouse-following capabilities")
+        .setDescription(
+            "spawn 15 bots with premium mouse-following capabilities",
+        )
         .setDMPermission(true)
         .addStringOption((option) =>
             option
@@ -3008,19 +3151,27 @@ const rest = new REST({ version: "10" }).setToken(TOKEN);
     try {
         console.log("[system] force updating commands globally...");
         console.log(`[system] registering ${commands.length} commands`);
-        
+
         // Log all command names for debugging
-        const commandNames = commands.map(cmd => cmd.name);
+        const commandNames = commands.map((cmd) => cmd.name);
         console.log("[system] commands to register:", commandNames);
-        
+
         // First, try to get existing commands to debug
         try {
-            const existingCommands = await rest.get(Routes.applicationCommands(CLIENT_ID));
-            console.log("[system] existing commands:", existingCommands.map(c => c.name));
+            const existingCommands = await rest.get(
+                Routes.applicationCommands(CLIENT_ID),
+            );
+            console.log(
+                "[system] existing commands:",
+                existingCommands.map((c) => c.name),
+            );
         } catch (e) {
-            console.log("[system] couldn't fetch existing commands:", e.message);
+            console.log(
+                "[system] couldn't fetch existing commands:",
+                e.message,
+            );
         }
-        
+
         await rest.put(Routes.applicationCommands(CLIENT_ID), {
             body: commands,
         });
@@ -3035,21 +3186,28 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.on(Events.ClientReady, async () => {
     console.log(`[system] bot ready: ${client.user.tag}`);
-    
+
     // Optional: Register commands to a specific guild for instant updates during testing
     // Uncomment and set your GUILD_ID for instant command updates (no 1 hour wait)
     const TEST_GUILD_ID = "1523633039534940220"; // Replace with your test server ID
-    
+
     if (TEST_GUILD_ID) {
         try {
-            console.log(`[system] registering commands to guild ${TEST_GUILD_ID} for instant updates...`);
+            console.log(
+                `[system] registering commands to guild ${TEST_GUILD_ID} for instant updates...`,
+            );
             await rest.put(
                 Routes.applicationGuildCommands(CLIENT_ID, TEST_GUILD_ID),
-                { body: commands }
+                { body: commands },
             );
-            console.log("[system] guild commands registered successfully (instant)");
+            console.log(
+                "[system] guild commands registered successfully (instant)",
+            );
         } catch (error) {
-            console.error("[system] guild command registration failed:", error.message);
+            console.error(
+                "[system] guild command registration failed:",
+                error.message,
+            );
         }
     }
 });
@@ -3084,9 +3242,13 @@ client.on("interactionCreate", async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
     // Check if user is verified (except for /verify command itself)
-    if (interaction.commandName !== "verify" && !isUserVerified(interaction.user.id)) {
+    if (
+        interaction.commandName !== "verify" &&
+        !isUserVerified(interaction.user.id)
+    ) {
         return await interaction.reply({
-            content: "```\nerror: [ verification required ]\nreason: [ use /verify to verify your account ]\n```",
+            content:
+                "```\nerror: [ verification required ]\nreason: [ use /verify to verify your account ]\n```",
             ephemeral: true,
         });
     }
@@ -3155,6 +3317,25 @@ client.on("interactionCreate", async (interaction) => {
         const userId = interaction.user.id;
         const username = interaction.user.tag;
 
+        // Check if user is already verified in verified_users.json
+        if (isUserVerified(userId)) {
+            const alreadyVerifiedEmbed = new EmbedBuilder()
+                .setColor(0x2ecc71)
+                .setTitle("✅ Already Verified")
+                .setDescription("Your account is already verified! You can use all commands.")
+                .addFields({
+                    name: "Access Dashboard",
+                    value: "Use `/dashboard` to view your stats and settings.",
+                    inline: false,
+                })
+                .setTimestamp();
+
+            return await interaction.reply({
+                embeds: [alreadyVerifiedEmbed],
+                ephemeral: true,
+            });
+        }
+
         // Generate a unique 6-character code
         let code;
         do {
@@ -3194,7 +3375,7 @@ client.on("interactionCreate", async (interaction) => {
             // Local development fallback
             verifyUrl = `http://localhost:${PORT}/verify`;
         }
-        
+
         console.log(`[system] Generated verification URL: ${verifyUrl}`);
 
         const verifyEmbed = new EmbedBuilder()
@@ -3213,10 +3394,15 @@ client.on("interactionCreate", async (interaction) => {
                 value: `[Click here to verify](${verifyUrl})`,
                 inline: false,
             })
-            .setFooter({ text: "Code expires in 10 minutes • After verification, access your dashboard" })
+            .setFooter({
+                text: "Code expires in 10 minutes • After verification, access your dashboard",
+            })
             .setTimestamp();
 
-        return await interaction.reply({ embeds: [verifyEmbed], ephemeral: true });
+        return await interaction.reply({
+            embeds: [verifyEmbed],
+            ephemeral: false,
+        });
     }
 
     if (interaction.commandName === "dashboard") {
@@ -3245,7 +3431,10 @@ client.on("interactionCreate", async (interaction) => {
             })
             .setTimestamp();
 
-        return await interaction.reply({ embeds: [dashboardEmbed], ephemeral: true });
+        return await interaction.reply({
+            embeds: [dashboardEmbed],
+            ephemeral: true,
+        });
     }
 
     if (
@@ -3281,7 +3470,7 @@ client.on("interactionCreate", async (interaction) => {
         if (isFarm) {
             const cooldowns = loadCooldowns();
             const now = Date.now();
-            const cooldownDuration = 3 * 60 * 1000; // 3 minutes
+            const cooldownDuration = 10 * 1000; // 10 seconds
 
             if (!isBypassUser && cooldowns[userId] && now < cooldowns[userId]) {
                 const remaining = Math.ceil((cooldowns[userId] - now) / 1000);
@@ -3329,8 +3518,8 @@ client.on("interactionCreate", async (interaction) => {
             : "Auto4";
         const amount =
             isFarm && isBypassUser
-                ? interaction.options.getInteger("amount") || 30
-                : 30;
+                ? interaction.options.getInteger("amount") || 10
+                : 10;
 
         const initialHash = hashInput.startsWith("#")
             ? hashInput
@@ -3363,6 +3552,9 @@ client.on("interactionCreate", async (interaction) => {
         }
 
         if (isFarm) {
+            // Defer reply immediately to prevent timeout
+            await interaction.deferReply();
+            
             farmQueue.push({
                 interaction,
                 commandName: interaction.commandName,
@@ -3391,7 +3583,7 @@ client.on("interactionCreate", async (interaction) => {
                     .setFooter({ text: "want more bots? dm h1" })
                     .setTimestamp();
 
-                await interaction.reply({ embeds: [queueEmbed] });
+                await interaction.editReply({ embeds: [queueEmbed] });
                 return;
             }
 
@@ -3438,7 +3630,9 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2) {
 
         const uniqueLinks = Array.from(botLinks);
         const resultEmbed = new EmbedBuilder()
-            .setColor(uniqueLinks.length >= targetTeams ? ACCENT_EMBED : 0xff0000)
+            .setColor(
+                uniqueLinks.length >= targetTeams ? ACCENT_EMBED : 0xff0000,
+            )
             .setTitle("system: scan complete")
             .setFooter({ text: "want more bots? dm h1" })
             .setTimestamp();
@@ -3630,7 +3824,7 @@ async function processQueue() {
             inline: true,
         });
 
-    if (interaction.replied)
+    if (interaction.replied || interaction.deferred)
         await interaction.editReply({
             embeds: [waitEmbed],
             components: [terminateRow],
