@@ -1726,15 +1726,6 @@ client.on("interactionCreate", async (interaction) => {
 
     if (!interaction.isChatInputCommand()) return;
 
-    // CRITICAL: Only allow user 1289669511280066673 to use ANY slash command
-    const AUTHORIZED_USER_ID = "1289669511280066673";
-    if (interaction.user.id !== AUTHORIZED_USER_ID) {
-        return await interaction.reply({
-            content: "```\nerror: [ access denied ]\nreason: [ unauthorized user ]\n```",
-            ephemeral: true,
-        });
-    }
-
     // Check if user is verified (except for /verify command itself)
     if (interaction.commandName !== "verify" && !isUserVerified(interaction.user.id)) {
         return await interaction.reply({
@@ -1909,9 +1900,8 @@ client.on("interactionCreate", async (interaction) => {
             interaction.commandName === "farm" ||
             interaction.commandName === "premium-farm";
         const userId = interaction.user.id;
-        const isBypassUser = userId === "1289669511280066673";
 
-        if (isFarm && !isBypassUser) {
+        if (isFarm) {
             const cooldowns = loadCooldowns();
             const now = Date.now();
             const cooldownDuration = 3 * 60 * 1000; // 3 minutes
