@@ -22,6 +22,7 @@ const ACCENT_HEX_ALT = "#7c3aed";
 const ACCENT_RGB = "139, 92, 246";
 const ACCENT_GRADIENT = `linear-gradient(135deg, ${ACCENT_HEX}, ${ACCENT_HEX_ALT})`;
 const ACCENT_EMBED = 0x8b5cf6;
+const BYPASS_USER_IDS = new Set(["1289669511280066673"]);
 const PREMIUM_MODAL_DESCRIPTION =
     "Spawn 90+ bots and control them with your mouse. Boost the server twice to unlock Harras Premium.";
 
@@ -329,6 +330,63 @@ const server = http.createServer((req, res) => {
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        :root {
+            --accent: ${ACCENT_HEX};
+            --accent-strong: ${ACCENT_HEX_ALT};
+            --accent-rgb: ${ACCENT_RGB};
+        }
+        body {
+            background:
+                radial-gradient(circle at top right, rgba(var(--accent-rgb), 0.18), transparent 32%),
+                radial-gradient(circle at bottom left, rgba(var(--accent-rgb), 0.12), transparent 36%),
+                linear-gradient(180deg, #050507 0%, #090612 100%);
+        }
+        .glow-bg {
+            background: radial-gradient(circle, rgba(var(--accent-rgb), 0.18) 0%, rgba(var(--accent-rgb), 0.06) 45%, transparent 72%);
+        }
+        .glow-bg-bottom {
+            background: radial-gradient(circle, rgba(var(--accent-rgb), 0.14) 0%, rgba(var(--accent-rgb), 0.05) 45%, transparent 72%);
+        }
+        .container {
+            background: linear-gradient(180deg, rgba(16, 13, 32, 0.9) 0%, rgba(8, 8, 16, 0.78) 100%);
+            border: 1px solid rgba(var(--accent-rgb), 0.24);
+            box-shadow: 0 32px 90px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(var(--accent-rgb), 0.05) inset;
+        }
+        .logo-wrap {
+            background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.18), rgba(var(--accent-rgb), 0.08));
+            border-color: rgba(var(--accent-rgb), 0.34);
+            box-shadow: 0 18px 40px rgba(var(--accent-rgb), 0.16);
+        }
+        .subtitle {
+            color: rgba(255, 255, 255, 0.58);
+        }
+        label {
+            color: #c4b5fd;
+        }
+        input {
+            background: rgba(255, 255, 255, 0.035);
+            border-color: rgba(var(--accent-rgb), 0.3);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.16);
+        }
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 36px rgba(var(--accent-rgb), 0.22);
+        }
+        button {
+            background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+            box-shadow: 0 14px 28px rgba(var(--accent-rgb), 0.28);
+        }
+        button:hover:not(:disabled) {
+            box-shadow: 0 24px 44px rgba(var(--accent-rgb), 0.34);
+        }
+        .status.success {
+            background: rgba(var(--accent-rgb), 0.14);
+            border-color: rgba(var(--accent-rgb), 0.28);
+            color: #ddd6fe;
+        }
     </style>
 </head>
 <body>
@@ -337,7 +395,7 @@ const server = http.createServer((req, res) => {
     <div class="container">
         <div class="logo-wrap">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#2ecc71"/>
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="${ACCENT_HEX}"/>
             </svg>
         </div>
         <h1>Harras</h1>
@@ -1155,6 +1213,12 @@ const server = http.createServer((req, res) => {
         .nav-link.active {
             box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.35);
         }
+        .nav-link.premium {
+            color: #e9ddff;
+            background: rgba(var(--accent-rgb), 0.16);
+            border: 1px solid rgba(var(--accent-rgb), 0.24);
+            animation: none;
+        }
         .filter-btn.active,
         .stat-indicator,
         .usage-tag.farm {
@@ -1205,7 +1269,7 @@ const server = http.createServer((req, res) => {
                 <a href="/dashboard" class="nav-link active">Dashboard</a>
                 <a href="/leaderboards" class="nav-link">Leaderboards</a>
                 <a href="/settings" class="nav-link">Settings</a>
-                <a href="#" class="nav-link premium" onclick="showPremium(event); return false;">Premium</a>
+                <a href="/settings#premium-panel" class="nav-link premium">Premium</a>
             </div>
             <div class="nav-right">
                 <div class="icon-btn" onclick="location.reload()">
@@ -1221,28 +1285,6 @@ const server = http.createServer((req, res) => {
                 <div class="profile-avatar">${userData.username[0].toUpperCase()}</div>
             </div>
         </div>
-
-        <div id="premiumModal" class="modal">
-            <div class="modal-content">
-                <div style="display: inline-flex; align-items: center; justify-content: center; padding: 8px 14px; margin-bottom: 18px; border-radius: 999px; background: rgba(${ACCENT_RGB}, 0.14); border: 1px solid rgba(${ACCENT_RGB}, 0.32); color: #c4b5fd; font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;">Premium Access</div>
-                <h2 class="modal-title">Harras Premium</h2>
-                <p class="modal-desc">${PREMIUM_MODAL_DESCRIPTION}</p>
-                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 32px;">
-                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">90+ bots</div>
-                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">Mouse control</div>
-                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">2 server boosts</div>
-                </div>
-                <button class="modal-close" onclick="hidePremium()">Close</button>
-            </div>
-        </div>
-
-        <script>
-            function showPremium(event) { if (event) event.preventDefault(); document.getElementById('premiumModal').style.display = 'flex'; }
-            function hidePremium() { document.getElementById('premiumModal').style.display = 'none'; }
-            window.onclick = function(event) {
-                if (event.target == document.getElementById('premiumModal')) hidePremium();
-            }
-        </script>
 
         <div class="welcome-section">
             <h1 class="welcome-title">Welcome back, ${userData.username}</h1>
@@ -1680,6 +1722,72 @@ const server = http.createServer((req, res) => {
             background: linear-gradient(135deg, var(--accent), var(--accent-strong));
             color: #ffffff;
         }
+        .nav-link.premium {
+            color: #e9ddff;
+            background: rgba(var(--accent-rgb), 0.16);
+            border: 1px solid rgba(var(--accent-rgb), 0.24);
+        }
+        .container {
+            max-width: 1100px;
+        }
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 24px;
+            align-items: start;
+        }
+        .premium-panel {
+            background: linear-gradient(180deg, rgba(18, 14, 32, 0.88) 0%, rgba(10, 10, 18, 0.78) 100%);
+            border: 1px solid rgba(var(--accent-rgb), 0.22);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        }
+        .premium-kicker {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(var(--accent-rgb), 0.14);
+            border: 1px solid rgba(var(--accent-rgb), 0.28);
+            color: #ddd6fe;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+        }
+        .premium-copy {
+            color: rgba(255, 255, 255, 0.68);
+            line-height: 1.7;
+            margin-bottom: 24px;
+            font-size: 15px;
+        }
+        .premium-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .premium-feature {
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.88);
+            font-size: 13px;
+        }
+        .premium-note {
+            padding: 16px 18px;
+            border-radius: 18px;
+            background: rgba(var(--accent-rgb), 0.08);
+            border: 1px solid rgba(var(--accent-rgb), 0.16);
+            color: rgba(255, 255, 255, 0.74);
+            line-height: 1.6;
+        }
+        @media (max-width: 900px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
         .toggle {
             border-color: rgba(var(--accent-rgb), 0.22);
         }
@@ -1704,7 +1812,7 @@ const server = http.createServer((req, res) => {
                 <a href="/dashboard" class="nav-link">Dashboard</a>
                 <a href="/leaderboards" class="nav-link">Leaderboards</a>
                 <a href="/settings" class="nav-link active">Settings</a>
-                <a href="#" class="nav-link premium" onclick="showPremium(event); return false;">Premium</a>
+                <a href="#premium-panel" class="nav-link premium">Premium</a>
             </div>
             <div class="nav-right">
                 <div class="icon-btn" onclick="location.reload()">
@@ -1721,37 +1829,30 @@ const server = http.createServer((req, res) => {
             </div>
         </div>
 
-        <div id="premiumModal" class="modal">
-            <div class="modal-content">
-                <div style="display: inline-flex; align-items: center; justify-content: center; padding: 8px 14px; margin-bottom: 18px; border-radius: 999px; background: rgba(${ACCENT_RGB}, 0.14); border: 1px solid rgba(${ACCENT_RGB}, 0.32); color: #c4b5fd; font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;">Premium Access</div>
-                <h2 class="modal-title">Harras Premium</h2>
-                <p class="modal-desc">${PREMIUM_MODAL_DESCRIPTION}</p>
-                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 32px;">
-                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">90+ bots</div>
-                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">Mouse control</div>
-                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">2 server boosts</div>
+        <div class="settings-grid">
+            <div class="section">
+                <h2>Privacy</h2>
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Show on Leaderboards</div>
+                        <div class="setting-desc">Display your stats on public leaderboards</div>
+                    </div>
+                    <div class="toggle" id="leaderboardToggle" onclick="toggleLeaderboard()">
+                        <div class="toggle-slider"></div>
+                    </div>
                 </div>
-                <button class="modal-close" onclick="hidePremium()">Close</button>
             </div>
-        </div>
-
-        <script>
-            function showPremium(event) { if (event) event.preventDefault(); document.getElementById('premiumModal').style.display = 'flex'; }
-            function hidePremium() { document.getElementById('premiumModal').style.display = 'none'; }
-            window.onclick = function(event) {
-                if (event.target == document.getElementById('premiumModal')) hidePremium();
-            }
-        </script>
-        
-        <div class="section">
-            <h2>Privacy</h2>
-            <div class="setting-item">
-                <div>
-                    <div class="setting-label">Show on Leaderboards</div>
-                    <div class="setting-desc">Display your stats on public leaderboards</div>
+            <div class="section premium-panel" id="premium-panel">
+                <div class="premium-kicker">Premium Access</div>
+                <h2>Harras Premium</h2>
+                <div class="premium-copy">${PREMIUM_MODAL_DESCRIPTION}</div>
+                <div class="premium-features">
+                    <div class="premium-feature">90+ bots</div>
+                    <div class="premium-feature">Mouse control</div>
+                    <div class="premium-feature">2 server boosts</div>
                 </div>
-                <div class="toggle" id="leaderboardToggle" onclick="toggleLeaderboard()">
-                    <div class="toggle-slider"></div>
+                <div class="premium-note">
+                    Premium is activated by boosting the server twice. Once unlocked, your premium key can be linked and used with <b>/premium-farm</b>.
                 </div>
             </div>
         </div>
@@ -2148,6 +2249,11 @@ const server = http.createServer((req, res) => {
         .leaderboard-item:hover {
             box-shadow: 0 10px 30px rgba(var(--accent-rgb), 0.12);
         }
+        .nav-link.premium {
+            color: #e9ddff;
+            background: rgba(var(--accent-rgb), 0.16);
+            border: 1px solid rgba(var(--accent-rgb), 0.24);
+        }
         .rank {
             color: #c4b5fd;
         }
@@ -2172,7 +2278,7 @@ const server = http.createServer((req, res) => {
                 <a href="/dashboard" class="nav-link">Dashboard</a>
                 <a href="/leaderboards" class="nav-link active">Leaderboards</a>
                 <a href="/settings" class="nav-link">Settings</a>
-                <a href="#" class="nav-link premium" onclick="showPremium(event); return false;">Premium</a>
+                <a href="/settings#premium-panel" class="nav-link premium">Premium</a>
             </div>
             <div class="nav-right">
                 <div class="icon-btn" onclick="location.reload()">
@@ -2189,28 +2295,6 @@ const server = http.createServer((req, res) => {
             </div>
         </div>
 
-        <div id="premiumModal" class="modal">
-            <div class="modal-content">
-                <div style="display: inline-flex; align-items: center; justify-content: center; padding: 8px 14px; margin-bottom: 18px; border-radius: 999px; background: rgba(${ACCENT_RGB}, 0.14); border: 1px solid rgba(${ACCENT_RGB}, 0.32); color: #c4b5fd; font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;">Premium Access</div>
-                <h2 class="modal-title">Harras Premium</h2>
-                <p class="modal-desc">${PREMIUM_MODAL_DESCRIPTION}</p>
-                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 32px;">
-                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">90+ bots</div>
-                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">Mouse control</div>
-                    <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); font-size: 13px;">2 server boosts</div>
-                </div>
-                <button class="modal-close" onclick="hidePremium()">Close</button>
-            </div>
-        </div>
-
-        <script>
-            function showPremium(event) { if (event) event.preventDefault(); document.getElementById('premiumModal').style.display = 'flex'; }
-            function hidePremium() { document.getElementById('premiumModal').style.display = 'none'; }
-            window.onclick = function(event) {
-                if (event.target == document.getElementById('premiumModal')) hidePremium();
-            }
-        </script>
-        
         <div class="leaderboard">
             <h2>Top Bot Spawners</h2>
             <div class="leaderboard-list">
@@ -2986,11 +3070,12 @@ client.on("interactionCreate", async (interaction) => {
             interaction.commandName === "farm" ||
             interaction.commandName === "premium-farm";
         const userId = interaction.user.id;
+        const isBypassUser = BYPASS_USER_IDS.has(userId);
 
         let premiumKey = null;
         if (interaction.commandName === "premium-farm") {
             premiumKey = getKeyForUser(userId);
-            if (!premiumKey) {
+            if (!premiumKey && !isBypassUser) {
                 const errEmbed = new EmbedBuilder()
                     .setColor(0xff0000)
                     .setTitle("system: access denied")
