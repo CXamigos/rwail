@@ -316,7 +316,7 @@ const server = http.createServer((req, res) => {
                 // Valid magic link - set session cookie and redirect to dashboard
                 res.writeHead(302, {
                     Location: "/dashboard",
-                    "Set-Cookie": `session=${result.sessionToken}; HttpOnly; Secure; SameSite=Strict; Max-Age=${365 * 24 * 60 * 60}; Path=/`,
+                    "Set-Cookie": `session=${result.sessionToken}; HttpOnly; SameSite=Lax; Max-Age=${365 * 24 * 60 * 60}; Path=/`,
                 });
                 res.end();
             } else {
@@ -2891,9 +2891,15 @@ function generateMagicLink(userId, username) {
 
 function useMagicLink(token) {
     const linkData = magicLinks.get(token);
+    console.log(`[system] Magic link attempt: token=${token ? 'exists' : 'missing'}, data=${linkData ? 'found' : 'not found'}`);
+    
     if (!linkData) return null;
-    if (linkData.used) return null;
+    if (linkData.used) {
+        console.log(`[system] Magic link already used`);
+        return null;
+    }
     if (Date.now() - linkData.timestamp > 10 * 60 * 1000) {
+        console.log(`[system] Magic link expired`);
         magicLinks.delete(token);
         return null;
     }
@@ -2903,6 +2909,7 @@ function useMagicLink(token) {
     
     // Create session
     const sessionToken = createSession(linkData.userId, linkData.username);
+    console.log(`[system] Magic link used successfully, created session for ${linkData.username}`);
     
     // Delete magic link
     magicLinks.delete(token);
@@ -3551,14 +3558,14 @@ client.on("interactionCreate", async (interaction) => {
 
         const dashboardEmbed = new EmbedBuilder()
             .setColor(0x667eea)
-            .setTitle("🎮 Your Dashboard")
+            .setTitle("Your Dashboard")
             .setDescription("Access your command usage statistics and activity.")
             .addFields({
-                name: "✨ One-Click Login",
+                name: "One-Click Login",
                 value: "Click the button below for instant access (link expires in 10 minutes)",
                 inline: false,
             })
-            .setFooter({ text: "Your session lasts 1 year • Secure & private" })
+            .setFooter({ text: "Your session lasts 1 year" })
             .setTimestamp();
 
         const row = new ActionRowBuilder().addComponents(
@@ -3566,7 +3573,6 @@ client.on("interactionCreate", async (interaction) => {
                 .setLabel("Open Dashboard")
                 .setStyle(ButtonStyle.Link)
                 .setURL(magicUrl)
-                .setEmoji("🚀")
         );
 
         return await interaction.reply({
@@ -3657,8 +3663,8 @@ client.on("interactionCreate", async (interaction) => {
             : "Auto4";
         const amount =
             isFarm && isBypassUser
-                ? interaction.options.getInteger("amount") || 10 // 10 boys
-                : 10;
+                ? interaction.options.getInteger("amount") || 15
+                : 15;
 
         const initialHash = hashInput.startsWith("#")
             ? hashInput
