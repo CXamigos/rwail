@@ -3518,7 +3518,7 @@ client.on("interactionCreate", async (interaction) => {
             : "Auto4";
         const amount =
             isFarm && isBypassUser
-                ? interaction.options.getInteger("amount") || 17
+                ? interaction.options.getInteger("amount") || 17 // 17
                 : 17;
 
         const initialHash = hashInput.startsWith("#")
