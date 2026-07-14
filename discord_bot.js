@@ -3518,8 +3518,8 @@ client.on("interactionCreate", async (interaction) => {
             : "Auto4";
         const amount =
             isFarm && isBypassUser
-                ? interaction.options.getInteger("amount") || 19 // 17
-                : 19;
+                ? interaction.options.getInteger("amount") || 18 // 17
+                : 18;
 
         const initialHash = hashInput.startsWith("#")
             ? hashInput
