@@ -3470,7 +3470,7 @@ client.on("interactionCreate", async (interaction) => {
         if (isFarm) {
             const cooldowns = loadCooldowns();
             const now = Date.now();
-            const cooldownDuration = 10 * 1000; // 10 seconds
+            const cooldownDuration = 50 * 1000; // 50 seconds
 
             if (!isBypassUser && cooldowns[userId] && now < cooldowns[userId]) {
                 const remaining = Math.ceil((cooldowns[userId] - now) / 1000);
@@ -3518,8 +3518,8 @@ client.on("interactionCreate", async (interaction) => {
             : "Auto4";
         const amount =
             isFarm && isBypassUser
-                ? interaction.options.getInteger("amount") || 15 // 17
-                : 15;
+                ? interaction.options.getInteger("amount") || 10
+                : 10;
 
         const initialHash = hashInput.startsWith("#")
             ? hashInput
