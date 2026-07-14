@@ -4123,7 +4123,7 @@ async function processQueue() {
 
 async function startBot() {
     try {
-        console.log(`[system] attempting discord login...`);
+        console.log(`[system] attempting discord login...`); // ye
         await client.login(TOKEN);
     } catch (err) {
         console.log(`[system] login failure: [ ${err.message} ]`);
