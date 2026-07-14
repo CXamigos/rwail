@@ -17,7 +17,7 @@ if (!TOKEN || !CLIENT_ID) {
 }
 
 // OPTIONAL: For instant updates, add your guild/server ID here
-const GUILD_ID = process.env.GUILD_ID || "1523633039534940220"; // Change this to your server ID
+const GUILD_ID = process.env.GUILD_ID || "1514006353721688146"; // Change this to your server ID
 
 const commands = [
     new SlashCommandBuilder()
