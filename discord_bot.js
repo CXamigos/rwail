@@ -224,11 +224,16 @@ function createBotWorker() {
         resourceLimits: BOT_WORKER_LIMITS,
     });
     worker.alive = true;
-    worker.booted = false;
     worker.terminating = false;
     worker.bootTimeout = setTimeout(() => {
         shutdownBotWorker(worker);
     }, BOT_BOOT_TIMEOUT);
+    worker.on("online", () => {
+        if (worker.bootTimeout) {
+            clearTimeout(worker.bootTimeout);
+            worker.bootTimeout = null;
+        }
+    });
     worker.on("exit", () => {
         worker.alive = false;
         if (worker.bootTimeout) {
@@ -249,17 +254,6 @@ function isBotWorkerAlive(worker) {
 function sendBotWorker(worker, payload) {
     if (isBotWorkerAlive(worker)) {
         worker.postMessage(payload);
-    }
-}
-
-function markBotWorkerReady(worker) {
-    if (!worker) {
-        return;
-    }
-    worker.booted = true;
-    if (worker.bootTimeout) {
-        clearTimeout(worker.bootTimeout);
-        worker.bootTimeout = null;
     }
 }
 
@@ -3335,8 +3329,8 @@ client.on("interactionCreate", async (interaction) => {
             : "Auto4";
         const amount =
             isFarm && isBypassUser
-                ? interaction.options.getInteger("amount") || 20
-                : 20;
+                ? interaction.options.getInteger("amount") || 30
+                : 30;
 
         const initialHash = hashInput.startsWith("#")
             ? hashInput
@@ -3496,7 +3490,6 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2) {
 
         worker.on("message", (msg) => {
             if (msg.type === "connected" || msg.type === "hash_update") {
-                markBotWorkerReady(worker);
                 const link = buildGameLink(msg.hash);
                 // Link must contain numbers and be unique
                 if (/\d/.test(msg.hash) && !botLinks.has(link)) {
@@ -3847,7 +3840,6 @@ async function processQueue() {
 
             worker.on("message", (msg) => {
                 if (msg.type === "connected" || msg.type === "hash_update") {
-                    markBotWorkerReady(worker);
                     botLinks.set(i, buildGameLink(msg.hash));
                     if (msg.hash.length > initialHash.length) {
                         if (!botsDone.has(i)) {
