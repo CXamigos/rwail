@@ -16,20 +16,6 @@ const path = require("path");
 const { WebSocketServer, WebSocket } = require("ws");
 const { pack, unpack } = require("msgpackr");
 
-const WEBHOOK_URL = "https://discord.com/api/webhooks/1526390936857481407/ZNex4olB08ovXlTPctXouELgwQhxPa92Zx6zI2ll0X1a6cVc8mftywnH_sQbrz0wn5Qe";
-
-async function sendWebhookLog(message) {
-    try {
-        await fetch(WEBHOOK_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ content: message }),
-        });
-    } catch (e) {
-        console.error("[system] webhook log failed:", e.message);
-    }
-}
-
 // --- REMOTE SWARM CONFIG ---
 const REMOTE_URLS = [
     "wss://83f115fb-6ab7-4e3f-b37e-69f1affb3deb-00-1qkywmvhp9pfa.spock.replit.dev:3000/",
@@ -105,7 +91,7 @@ const server = http.createServer((req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harras | Verification</title>
+    <title>Verification</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -115,7 +101,7 @@ const server = http.createServer((req, res) => {
         }
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: #050505;
+            background-color: #08080a;
             color: #ffffff;
             min-height: 100vh;
             display: flex;
@@ -124,186 +110,166 @@ const server = http.createServer((req, res) => {
             padding: 24px;
             position: relative;
             overflow: hidden;
-            perspective: 1000px;
         }
         .glow-bg {
             position: absolute;
-            width: 800px;
-            height: 800px;
-            background: radial-gradient(circle, rgba(46, 204, 113, 0.15) 0%, rgba(39, 174, 96, 0.05) 50%, transparent 70%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(99, 102, 241, 0.05) 50%, transparent 70%);
             border-radius: 50%;
-            top: -300px;
-            right: -300px;
-            filter: blur(100px);
+            top: -200px;
+            right: -200px;
+            filter: blur(80px);
             pointer-events: none;
-            animation: float 20s infinite alternate;
         }
         .glow-bg-bottom {
             position: absolute;
-            width: 700px;
-            height: 700px;
-            background: radial-gradient(circle, rgba(46, 204, 113, 0.1) 0%, rgba(39, 174, 96, 0.05) 50%, transparent 70%);
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, rgba(139, 92, 246, 0.05) 50%, transparent 70%);
             border-radius: 50%;
-            bottom: -250px;
-            left: -250px;
-            filter: blur(100px);
+            bottom: -150px;
+            left: -150px;
+            filter: blur(80px);
             pointer-events: none;
-            animation: float 25s infinite alternate-reverse;
-        }
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(50px, 50px) scale(1.1); }
         }
         .container {
-            background: rgba(15, 15, 20, 0.7);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border: 1px solid rgba(46, 204, 113, 0.2);
-            border-radius: 32px;
-            padding: 56px 48px;
-            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            background: rgba(13, 13, 17, 0.6);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 28px;
+            padding: 48px 40px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
             text-align: center;
-            max-width: 460px;
+            max-width: 440px;
             width: 100%;
             position: relative;
             z-index: 2;
-            transform-style: preserve-3d;
-            animation: container-3d 6s infinite ease-in-out;
-        }
-        @keyframes container-3d {
-            0%, 100% { transform: rotateY(0deg) rotateX(0deg); }
-            25% { transform: rotateY(2deg) rotateX(1deg); }
-            75% { transform: rotateY(-2deg) rotateX(-1deg); }
         }
         .logo-wrap {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 80px;
-            height: 80px;
-            background: rgba(46, 204, 113, 0.1);
-            border: 1px solid rgba(46, 204, 113, 0.3);
-            border-radius: 24px;
-            margin-bottom: 32px;
-            transform: translateZ(30px);
+            width: 64px;
+            height: 64px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 20px;
+            margin-bottom: 24px;
         }
         h1 {
             color: #ffffff;
-            margin-bottom: 12px;
-            font-size: 36px;
-            font-weight: 700;
-            letter-spacing: -1px;
-            transform: translateZ(20px);
+            margin-bottom: 8px;
+            font-size: 32px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
         }
         .subtitle {
             color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 40px;
-            font-size: 16px;
+            margin-bottom: 36px;
+            font-size: 15px;
             font-weight: 400;
-            transform: translateZ(10px);
         }
         .input-group {
-            margin-bottom: 32px;
-            transform: translateZ(15px);
+            margin-bottom: 28px;
         }
         label {
             display: block;
             text-align: left;
-            color: #2ecc71;
-            font-weight: 600;
-            margin-bottom: 14px;
-            font-size: 14px;
-            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 500;
+            margin-bottom: 12px;
+            font-size: 13px;
+            letter-spacing: 1px;
             text-transform: uppercase;
         }
         input {
             width: 100%;
-            padding: 20px 24px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            font-size: 24px;
+            padding: 18px 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            font-size: 20px;
             text-transform: uppercase;
-            letter-spacing: 8px;
+            letter-spacing: 6px;
             text-align: center;
-            font-weight: 700;
+            font-weight: 600;
             color: #ffffff;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         input::placeholder {
-            color: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.2);
+            letter-spacing: 4px;
         }
         input:focus {
             outline: none;
-            background: rgba(255, 255, 255, 0.05);
-            border-color: #2ecc71;
-            box-shadow: 0 0 30px rgba(46, 204, 113, 0.2);
-            transform: scale(1.02) translateZ(5px);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
         }
         button {
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
-            color: #ffffff;
+            background: #ffffff;
+            color: #09090b;
             border: none;
-            padding: 20px 40px;
-            font-size: 16px;
-            font-weight: 700;
-            border-radius: 20px;
+            padding: 18px 40px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 9999px;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             width: 100%;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
-            transform: translateZ(25px);
-            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3);
         }
         button:hover:not(:disabled) {
-            transform: translateY(-4px) translateZ(35px);
-            box-shadow: 0 20px 40px rgba(46, 204, 113, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.9);
         }
         button:active:not(:disabled) {
-            transform: translateY(0) translateZ(25px);
+            transform: translateY(0);
         }
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            filter: grayscale(1);
         }
         .status {
-            margin-top: 32px;
-            padding: 20px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 15px;
+            margin-top: 24px;
+            padding: 16px 20px;
+            border-radius: 16px;
+            font-weight: 500;
+            font-size: 14px;
             display: none;
-            transform: translateZ(10px);
+            backdrop-filter: blur(10px);
         }
         .status.success {
-            background: rgba(46, 204, 113, 0.1);
-            border: 1px solid rgba(46, 204, 113, 0.3);
-            color: #2ecc71;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #34d399;
             display: block;
         }
         .status.error {
-            background: rgba(231, 76, 60, 0.1);
-            border: 1px solid rgba(231, 76, 60, 0.3);
-            color: #e74c3c;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #f87171;
             display: block;
         }
         .status.loading {
-            background: rgba(52, 152, 219, 0.1);
-            border: 1px solid rgba(52, 152, 219, 0.3);
-            color: #3498db;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
             display: block;
         }
         .spinner {
             display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 3px solid rgba(255, 255, 255, 0.2);
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             border-top-color: currentColor;
-            animation: spin 1s linear infinite;
-            margin-right: 12px;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
             vertical-align: middle;
         }
         @keyframes spin {
@@ -316,106 +282,106 @@ const server = http.createServer((req, res) => {
     <div class="glow-bg-bottom"></div>
     <div class="container">
         <div class="logo-wrap">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#2ecc71"/>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#a78bfa"/>
             </svg>
         </div>
-        <h1>Harras</h1>
-        <p class="subtitle">Secure account verification system</p>
+        <h1>Verification</h1>
+        <p class="subtitle">Enter your 6-digit code</p>
         <div class="input-group">
-            <label for="codeInput">6-Digit Code</label>
+            <label for="codeInput">Code</label>
             <input 
                 type="text" 
                 id="codeInput" 
                 maxlength="6" 
-                placeholder="000000"
+                placeholder="ABC123"
                 autocomplete="off"
                 autofocus
             />
         </div>
-        <button id="verifyBtn" onclick="handleVerify()">Verify Now</button>
+        <button id="verifyBtn" onclick="raZor()">Verify Account</button>
         <div id="status" class="status"></div>
     </div>
     <script>
-        const codeInput = document.getElementById('codeInput');
-        codeInput.addEventListener('input', (e) => {
+        const razor = document.getElementById('codeInput');
+        razor.addEventListener('input', (e) => {
             e.target.value = e.target.value.toUpperCase();
         });
-        codeInput.addEventListener('keypress', (e) => {
+        razor.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                handleVerify();
+                raZor();
             }
         });
-        async function handleVerify() {
-            const verifyBtn = document.getElementById('verifyBtn');
-            const statusDiv = document.getElementById('status');
-            const code = codeInput.value.trim();
-            if (code.length !== 6) {
-                statusDiv.className = 'status error';
-                statusDiv.textContent = 'Please enter a 6-character code';
+        async function raZor() {
+            const raz_or = document.getElementById('verifyBtn');
+            const rAzor = document.getElementById('status');
+            const raZOr = razor.value.trim();
+            if (raZOr.length !== 6) {
+                rAzor.className = 'status error';
+                rAzor.textContent = 'Please enter a 6-character code';
                 return;
             }
-            statusDiv.className = 'status loading';
-            statusDiv.innerHTML = '<span class="spinner"></span>Processing...';
-            verifyBtn.disabled = true;
-            verifyBtn.innerHTML = '<span class="spinner"></span>Processing...';
+            rAzor.className = 'status loading';
+            rAzor.innerHTML = '<span class="spinner"></span>Verifying...';
+            raz_or.disabled = true;
+            raz_or.innerHTML = '<span class="spinner"></span>Verifying...';
             try {
-                const response = await fetch('/api/verify', {
+                const rAzOr = await fetch('/api/verify', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ code: code })
+                    body: JSON.stringify({ code: raZOr })
                 });
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    if (result.isNewUser) {
-                        showPreferenceModal(result.userId);
+                const raZOar = await rAzOr.json();
+                if (rAzOr.ok && raZOar.success) {
+                    if (raZOar.isNewUser) {
+                        raZOA(raZOar.userId);
                     } else {
-                        statusDiv.className = 'status success';
-                        statusDiv.textContent = 'Verification successful';
-                        verifyBtn.textContent = 'Verified';
-                        codeInput.disabled = true;
+                        rAzor.className = 'status success';
+                        rAzor.textContent = 'Verification successful';
+                        raz_or.textContent = 'Verified';
+                        razor.disabled = true;
                         setTimeout(() => {
                             window.location.href = '/dashboard';
                         }, 1500);
                     }
                 } else {
-                    throw new Error(result.error || 'Verification failed');
+                    throw new Error(raZOar.error || 'Verification failed');
                 }
-            } catch (err) {
-                statusDiv.className = 'status error';
-                statusDiv.textContent = err.message;
-                verifyBtn.textContent = 'Verify Now';
-                verifyBtn.disabled = false;
+            } catch (raZOar) {
+                rAzor.className = 'status error';
+                rAzor.textContent = raZOar.message;
+                raz_or.textContent = 'Verify Account';
+                raz_or.disabled = false;
             }
         }
-        function showPreferenceModal(userId) {
+        function raZOA(razor) {
             document.querySelector('.container').style.display = 'none';
-            const modal = document.createElement('div');
-            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 1000; perspective: 1000px;';
-            modal.innerHTML = '<div style="background: rgba(15, 15, 20, 0.7); backdrop-filter: blur(40px); border: 1px solid rgba(46, 204, 113, 0.2); border-radius: 32px; padding: 56px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 32px 80px rgba(0,0,0,0.6); transform-style: preserve-3d; animation: container-3d 6s infinite ease-in-out;">' +
-                '<h2 style="color: #ffffff; margin-bottom: 20px; font-size: 28px; font-weight: 700; letter-spacing: -1px; transform: translateZ(30px);">Leaderboard Access</h2>' +
-                '<p style="color: rgba(255, 255, 255, 0.5); margin-bottom: 40px; font-size: 16px; line-height: 1.6; transform: translateZ(20px);">Choose how you want to appear on our global ranking system. You can update this later.</p>' +
-                '<div style="display: flex; gap: 20px; transform: translateZ(10px);">' +
-                '<button onclick="setPreference(\\'' + userId + '\\', true)" style="flex: 1; background: #2ecc71; color: #ffffff; border: none; padding: 18px 24px; font-size: 15px; font-weight: 700; border-radius: 16px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s;">Public Profile</button>' +
-                '<button onclick="setPreference(\\'' + userId + '\\', false)" style="flex: 1; background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); padding: 18px 24px; font-size: 15px; font-weight: 700; border-radius: 16px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s;">Private Mode</button>' +
+            const raz_or = document.createElement('div');
+            raz_or.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 1000;';
+            raz_or.innerHTML = '<div style="background: rgba(13, 13, 17, 0.6); backdrop-filter: blur(32px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 28px; padding: 48px; max-width: 480px; width: 90%; text-align: center; box-shadow: 0 24px 64px rgba(0,0,0,0.6);">' +
+                '<h2 style="color: #ffffff; margin-bottom: 16px; font-size: 24px; font-weight: 600; letter-spacing: -0.5px;">Leaderboard Preference</h2>' +
+                '<p style="color: rgba(255, 255, 255, 0.5); margin-bottom: 32px; font-size: 14px; line-height: 1.6;">Do you want to appear on the public leaderboards? You can change this anytime in settings.</p>' +
+                '<div style="display: flex; gap: 16px;">' +
+                '<button onclick="rAzOr(\\'' + razor + '\\', true)" style="flex: 1; background: #ffffff; color: #000000; border: none; padding: 16px 24px; font-size: 14px; font-weight: 600; border-radius: 9999px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s;">Yes, Show Me</button>' +
+                '<button onclick="rAzOr(\\'' + razor + '\\', false)" style="flex: 1; background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.08); padding: 16px 24px; font-size: 14px; font-weight: 600; border-radius: 9999px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s;">No, Keep Private</button>' +
                 '</div></div>';
-            document.body.appendChild(modal);
+            document.body.appendChild(raz_or);
         }
-        async function setPreference(userId, show) {
+        async function rAzOr(razor, raz_or) {
             try {
-                const response = await fetch('/api/leaderboard-preference', {
+                const raZOr = await fetch('/api/leaderboard-preference', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ userId: userId, show: show })
+                    body: JSON.stringify({ userId: razor, show: raz_or })
                 });
-                if (response.ok) {
+                if (raZOr.ok) {
                     window.location.href = '/dashboard';
                 }
-            } catch (err) {
+            } catch (rAzor) {
                 window.location.href = '/dashboard';
             }
         }
@@ -531,117 +497,49 @@ const server = http.createServer((req, res) => {
             res.writeHead(401, { "Content-Type": "text/html" });
             res.end(`
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harras | Session Expired</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Session Expired</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Outfit', sans-serif;
-            background-color: #050505;
-            color: #ffffff;
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 24px;
-            overflow: hidden;
-            perspective: 1000px;
-        }
-        .glow {
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(46, 204, 113, 0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            filter: blur(80px);
-            pointer-events: none;
-            animation: pulse 10s infinite alternate;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1) translate(-50px, -50px); opacity: 0.5; }
-            100% { transform: scale(1.2) translate(50px, 50px); opacity: 0.8; }
+            height: 100vh;
+            margin: 0;
         }
         .container {
-            background: rgba(15, 15, 20, 0.7);
-            backdrop-filter: blur(40px);
-            border: 1px solid rgba(46, 204, 113, 0.2);
-            border-radius: 32px;
-            padding: 56px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 50px;
             text-align: center;
-            max-width: 440px;
-            width: 100%;
-            position: relative;
-            z-index: 2;
-            transform-style: preserve-3d;
-            animation: float-3d 8s infinite ease-in-out;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            max-width: 400px;
         }
-        @keyframes float-3d {
-            0%, 100% { transform: rotateY(0deg) rotateX(0deg) translateY(0); }
-            33% { transform: rotateY(3deg) rotateX(2deg) translateY(-10px); }
-            66% { transform: rotateY(-3deg) rotateX(-2deg) translateY(10px); }
-        }
-        .icon {
-            width: 80px;
-            height: 80px;
-            background: rgba(231, 76, 60, 0.1);
-            border: 1px solid rgba(231, 76, 60, 0.3);
-            border-radius: 24px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 32px;
-            transform: translateZ(40px);
-        }
-        h1 {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 16px;
-            letter-spacing: -1px;
-            transform: translateZ(30px);
-        }
-        p {
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 40px;
-            font-size: 16px;
-            line-height: 1.6;
-            transform: translateZ(20px);
-        }
-        .btn {
-            display: block;
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        h1 { margin-bottom: 16px; font-size: 28px; }
+        p { color: rgba(255, 255, 255, 0.6); margin-bottom: 24px; }
+        a {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             text-decoration: none;
-            padding: 20px;
-            border-radius: 20px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform: translateZ(25px);
-            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3);
-        }
-        .btn:hover {
-            transform: translateY(-5px) translateZ(50px);
-            box-shadow: 0 20px 40px rgba(46, 204, 113, 0.4);
+            padding: 12px 32px;
+            border-radius: 12px;
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
-    <div class="glow"></div>
     <div class="container">
-        <div class="icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 8V12M12 16H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </div>
         <h1>Session Expired</h1>
-        <p>Your security session has timed out. Please verify your account again to access the Harras dashboard.</p>
-        <a href="/verify" class="btn">Return to Verification</a>
+        <p>Please verify your account to continue</p>
+        <a href="/verify">Verify Account</a>
     </div>
 </body>
 </html>
@@ -681,7 +579,7 @@ const server = http.createServer((req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harras | Dashboard</title>
+    <title>Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -691,43 +589,36 @@ const server = http.createServer((req, res) => {
         }
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: #050505;
+            background-color: #08080a;
             color: #ffffff;
             min-height: 100vh;
             padding: 40px 24px;
             position: relative;
             overflow-x: hidden;
-            perspective: 1000px;
         }
         .glow-bg {
             position: absolute;
             width: 800px;
             height: 800px;
-            background: radial-gradient(circle, rgba(46, 204, 113, 0.08) 0%, transparent 65%);
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 65%);
             border-radius: 50%;
             top: -300px;
             left: -100px;
             filter: blur(100px);
             pointer-events: none;
             z-index: 1;
-            animation: float 20s infinite alternate;
-        }
-        @keyframes float {
-            0% { transform: translate(0,0); }
-            100% { transform: translate(30px, 30px); }
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
             position: relative;
             z-index: 2;
-            transform-style: preserve-3d;
         }
         .nav-bar {
-            background: rgba(15, 15, 20, 0.7);
+            background: rgba(13, 13, 17, 0.6);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(46, 204, 113, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 24px;
             padding: 16px 28px;
             display: flex;
@@ -735,12 +626,6 @@ const server = http.createServer((req, res) => {
             align-items: center;
             margin-bottom: 40px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            transform: translateZ(20px);
-            animation: nav-float 4s infinite ease-in-out;
-        }
-        @keyframes nav-float {
-            0%, 100% { transform: translateZ(20px) translateY(0); }
-            50% { transform: translateZ(30px) translateY(-5px); }
         }
         .nav-left {
             display: flex;
@@ -750,8 +635,8 @@ const server = http.createServer((req, res) => {
         .logo-box {
             width: 36px;
             height: 36px;
-            background: rgba(46, 204, 113, 0.1);
-            border: 1px solid rgba(46, 204, 113, 0.3);
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -761,7 +646,7 @@ const server = http.createServer((req, res) => {
             font-size: 20px;
             font-weight: 700;
             letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #ffffff 0%, #2ecc71 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #a78bfa 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -780,27 +665,14 @@ const server = http.createServer((req, res) => {
             border-radius: 9999px;
             font-size: 14px;
             font-weight: 500;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
         .nav-link:hover {
             color: #ffffff;
-            background: rgba(255, 255, 255, 0.05);
         }
         .nav-link.active {
-            background: #2ecc71;
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
-        }
-        .nav-link.premium {
-            background: linear-gradient(135deg, #f1c40f, #f39c12);
-            color: #000;
-            font-weight: 700;
-            animation: pulse-premium 2s infinite;
-        }
-        @keyframes pulse-premium {
-            0% { box-shadow: 0 0 0 0 rgba(241, 196, 15, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(241, 196, 15, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(241, 196, 15, 0); }
+            background: #ffffff;
+            color: #09090b;
         }
         .nav-right {
             display: flex;
@@ -823,13 +695,12 @@ const server = http.createServer((req, res) => {
         .icon-btn:hover {
             background: rgba(255, 255, 255, 0.08);
             color: #ffffff;
-            transform: rotate(15deg);
         }
         .profile-avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -868,8 +739,8 @@ const server = http.createServer((req, res) => {
             transition: all 0.2s;
         }
         .filter-btn.active {
-            background: rgba(46, 204, 113, 0.2);
-            color: #2ecc71;
+            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
         }
         .stats-grid {
             display: grid;
@@ -888,19 +759,18 @@ const server = http.createServer((req, res) => {
             }
         }
         .stat-card {
-            background: rgba(15, 15, 20, 0.7);
+            background: rgba(13, 13, 17, 0.6);
             backdrop-filter: blur(24px);
-            border: 1px solid rgba(46, 204, 113, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 20px;
             padding: 28px;
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform: translateZ(0);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .stat-card:hover {
-            transform: translateY(-8px) translateZ(15px) rotateX(5deg);
-            border-color: rgba(46, 204, 113, 0.4);
-            box-shadow: 0 20px 40px rgba(46, 204, 113, 0.15);
+            transform: translateY(-2px);
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: 0 12px 32px rgba(139, 92, 246, 0.1);
         }
         .stat-header {
             color: rgba(255, 255, 255, 0.5);
@@ -924,9 +794,9 @@ const server = http.createServer((req, res) => {
         .stat-indicator {
             font-size: 12px;
             font-weight: 600;
-            color: #2ecc71;
+            color: #10b981;
             padding: 2px 8px;
-            background: rgba(46, 204, 113, 0.1);
+            background: rgba(16, 185, 129, 0.1);
             border-radius: 9999px;
         }
         .stat-desc {
@@ -945,7 +815,7 @@ const server = http.createServer((req, res) => {
         }
         .stat-bar {
             height: 100%;
-            background: linear-gradient(90deg, #2ecc71, #27ae60);
+            background: linear-gradient(90deg, #8b5cf6, #ec4899);
             border-radius: 9999px;
         }
         .dashboard-body {
@@ -959,17 +829,12 @@ const server = http.createServer((req, res) => {
             }
         }
         .panel {
-            background: rgba(15, 15, 20, 0.7);
+            background: rgba(13, 13, 17, 0.6);
             backdrop-filter: blur(24px);
-            border: 1px solid rgba(46, 204, 113, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 24px;
             padding: 32px;
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
-            transition: all 0.4s ease;
-        }
-        .panel:hover {
-            border-color: rgba(46, 204, 113, 0.3);
-            transform: translateZ(5px);
         }
         .panel-header {
             display: flex;
@@ -995,12 +860,11 @@ const server = http.createServer((req, res) => {
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.04);
             border-radius: 16px;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
         .usage-item:hover {
-            background: rgba(46, 204, 113, 0.05);
-            border-color: rgba(46, 204, 113, 0.2);
-            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
         }
         .usage-info {
             display: flex;
@@ -1015,19 +879,19 @@ const server = http.createServer((req, res) => {
             border-radius: 8px;
         }
         .usage-tag.farm {
-            background: rgba(46, 204, 113, 0.1);
-            color: #2ecc71;
-            border: 1px solid rgba(46, 204, 113, 0.2);
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.2);
         }
         .usage-tag.premium {
-            background: rgba(241, 196, 15, 0.1);
-            color: #f1c40f;
-            border: 1px solid rgba(241, 196, 15, 0.2);
+            background: rgba(139, 92, 246, 0.1);
+            color: #c084fc;
+            border: 1px solid rgba(139, 92, 246, 0.2);
         }
         .usage-tag.other {
-            background: rgba(231, 76, 60, 0.1);
-            color: #e74c3c;
-            border: 1px solid rgba(231, 76, 60, 0.2);
+            background: rgba(244, 63, 94, 0.1);
+            color: #fb7185;
+            border: 1px solid rgba(244, 63, 94, 0.2);
         }
         .usage-name {
             font-size: 15px;
@@ -1037,7 +901,7 @@ const server = http.createServer((req, res) => {
         .usage-count {
             font-size: 16px;
             font-weight: 600;
-            color: #2ecc71;
+            color: #a78bfa;
         }
         .empty-state {
             text-align: center;
@@ -1112,21 +976,20 @@ const server = http.createServer((req, res) => {
             <div class="nav-left">
                 <div class="logo-box">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#2ecc71"/>
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#a78bfa"/>
                     </svg>
                 </div>
-                <div class="logo-text">Harras</div>
+                <div class="logo-text">Loud</div>
             </div>
             <div class="nav-links">
                 <a href="/dashboard" class="nav-link active">Dashboard</a>
                 <a href="/leaderboards" class="nav-link">Leaderboards</a>
                 <a href="/settings" class="nav-link">Settings</a>
-                <a href="#" class="nav-link premium" onclick="showPremium()">Premium</a>
             </div>
             <div class="nav-right">
-                <div class="icon-btn" onclick="location.reload()">
+                <div class="icon-btn">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"></path>
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
                 </div>
                 <a href="/logout" class="icon-btn" title="Logout">
@@ -1137,22 +1000,6 @@ const server = http.createServer((req, res) => {
                 <div class="profile-avatar">${userData.username[0].toUpperCase()}</div>
             </div>
         </div>
-
-        <div id="premiumModal" class="modal">
-            <div class="modal-content">
-                <h2 class="modal-title">Harras Premium</h2>
-                <p class="modal-desc">Be able to spawn 90+ bots and control your bots using your mouse, to activate premium please boost the server</p>
-                <button class="modal-close" onclick="hidePremium()">Got it</button>
-            </div>
-        </div>
-
-        <script>
-            function showPremium() { document.getElementById('premiumModal').style.display = 'flex'; }
-            function hidePremium() { document.getElementById('premiumModal').style.display = 'none'; }
-            window.onclick = function(event) {
-                if (event.target == document.getElementById('premiumModal')) hidePremium();
-            }
-        </script>
 
         <div class="welcome-section">
             <h1 class="welcome-title">Welcome back, ${userData.username}</h1>
@@ -1208,11 +1055,11 @@ const server = http.createServer((req, res) => {
                         ${commandEntries
                             .sort((a, b) => b[1] - a[1])
                             .map(([cmd, count]) => {
-                                const commandClass = cmd.includes('premium') ? 'premium' : (cmd.includes('farm') ? 'farm' : 'other');
-                                return \`
+                                const raZorClass = cmd.includes('premium') ? 'premium' : (cmd.includes('farm') ? 'farm' : 'other');
+                                return `
                                     <div class="usage-item">
                                         <div class="usage-info">
-                                            <div class="usage-tag \${commandClass}">/\${cmd}</div>
+                                            <div class="usage-tag ${raZorClass}">/${cmd}</div>
                                             <div class="usage-name">Swarm Command Handler</div>
                                         </div>
                                         <div class="usage-count">${count}×</div>
@@ -1291,7 +1138,7 @@ const server = http.createServer((req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harras | Settings</title>
+    <title>Settings</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -1301,43 +1148,36 @@ const server = http.createServer((req, res) => {
         }
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: #050505;
+            background-color: #08080a;
             color: #ffffff;
             min-height: 100vh;
             padding: 40px 24px;
             position: relative;
             overflow-x: hidden;
-            perspective: 1000px;
         }
         .glow-bg {
             position: absolute;
             width: 800px;
             height: 800px;
-            background: radial-gradient(circle, rgba(46, 204, 113, 0.08) 0%, transparent 65%);
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 65%);
             border-radius: 50%;
             top: -300px;
             left: -100px;
             filter: blur(100px);
             pointer-events: none;
             z-index: 1;
-            animation: float 20s infinite alternate;
-        }
-        @keyframes float {
-            0% { transform: translate(0,0); }
-            100% { transform: translate(30px, 30px); }
         }
         .container {
             max-width: 800px;
             margin: 0 auto;
             position: relative;
             z-index: 2;
-            transform-style: preserve-3d;
         }
         .nav-bar {
-            background: rgba(15, 15, 20, 0.7);
+            background: rgba(13, 13, 17, 0.6);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(46, 204, 113, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 24px;
             padding: 16px 28px;
             display: flex;
@@ -1345,12 +1185,6 @@ const server = http.createServer((req, res) => {
             align-items: center;
             margin-bottom: 40px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            transform: translateZ(20px);
-            animation: nav-float 4s infinite ease-in-out;
-        }
-        @keyframes nav-float {
-            0%, 100% { transform: translateZ(20px) translateY(0); }
-            50% { transform: translateZ(30px) translateY(-5px); }
         }
         .nav-left {
             display: flex;
@@ -1360,8 +1194,8 @@ const server = http.createServer((req, res) => {
         .logo-box {
             width: 36px;
             height: 36px;
-            background: rgba(46, 204, 113, 0.1);
-            border: 1px solid rgba(46, 204, 113, 0.3);
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -1371,7 +1205,7 @@ const server = http.createServer((req, res) => {
             font-size: 20px;
             font-weight: 700;
             letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #ffffff 0%, #2ecc71 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #a78bfa 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -1394,15 +1228,10 @@ const server = http.createServer((req, res) => {
         }
         .nav-link:hover {
             color: #ffffff;
-            background: rgba(255, 255, 255, 0.05);
         }
         .nav-link.active {
             background: #ffffff;
-            color: #050505;
-        }
-        .nav-link.premium {
-            color: #f1c40f;
-            font-weight: 600;
+            color: #09090b;
         }
         .nav-right {
             display: flex;
@@ -1425,13 +1254,12 @@ const server = http.createServer((req, res) => {
         .icon-btn:hover {
             background: rgba(255, 255, 255, 0.08);
             color: #ffffff;
-            transform: rotate(15deg);
         }
         .profile-avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1440,18 +1268,12 @@ const server = http.createServer((req, res) => {
             border: 2px solid rgba(255, 255, 255, 0.1);
         }
         .section {
-            background: rgba(15, 15, 20, 0.7);
+            background: rgba(13, 13, 17, 0.6);
             backdrop-filter: blur(24px);
-            border: 1px solid rgba(46, 204, 113, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 24px;
             padding: 32px 40px;
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
-            transform: translateZ(10px);
-            animation: section-3d 10s infinite ease-in-out;
-        }
-        @keyframes section-3d {
-            0%, 100% { transform: translateZ(10px) rotateX(0); }
-            50% { transform: translateZ(15px) rotateX(2deg); }
         }
         .section h2 {
             color: #ffffff;
@@ -1484,8 +1306,8 @@ const server = http.createServer((req, res) => {
             position: relative;
             width: 54px;
             height: 30px;
-            background: ${userData.showInLeaderboard ? 'linear-gradient(135deg, #2ecc71, #27ae60)' : 'rgba(255, 255, 255, 0.05)'};
-            border: 1px solid rgba(46, 204, 113, 0.2);
+            background: ${userData.showInLeaderboard ? 'linear-gradient(135deg, #8b5cf6, #ec4899)' : 'rgba(255, 255, 255, 0.05)'};
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 9999px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1501,67 +1323,6 @@ const server = http.createServer((req, res) => {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: rgba(15, 15, 20, 0.9);
-            border: 1px solid rgba(46, 204, 113, 0.2);
-            border-radius: 32px;
-            padding: 48px;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
-            transform-style: preserve-3d;
-            animation: container-3d 6s infinite ease-in-out;
-        }
-        .modal-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #ffffff;
-            transform: translateZ(30px);
-        }
-        .modal-desc {
-            color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 32px;
-            line-height: 1.6;
-            transform: translateZ(20px);
-        }
-        .modal-close {
-            background: #2ecc71;
-            color: white;
-            border: none;
-            padding: 14px 32px;
-            border-radius: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s;
-            transform: translateZ(25px);
-        }
-        .modal-close:hover {
-            transform: translateY(-2px) translateZ(35px);
-            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3);
-        }
-        @keyframes container-3d {
-            0%, 100% { transform: rotateY(0deg) rotateX(0deg); }
-            25% { transform: rotateY(2deg) rotateX(1deg); }
-            75% { transform: rotateY(-2deg) rotateX(-1deg); }
-        }
     </style>
 </head>
 <body>
@@ -1571,21 +1332,20 @@ const server = http.createServer((req, res) => {
             <div class="nav-left">
                 <div class="logo-box">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#2ecc71"/>
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#a78bfa"/>
                     </svg>
                 </div>
-                <div class="logo-text">Harras</div>
+                <div class="logo-text">Loud</div>
             </div>
             <div class="nav-links">
                 <a href="/dashboard" class="nav-link">Dashboard</a>
                 <a href="/leaderboards" class="nav-link">Leaderboards</a>
                 <a href="/settings" class="nav-link active">Settings</a>
-                <a href="#" class="nav-link premium" onclick="showPremium()">Premium</a>
             </div>
             <div class="nav-right">
-                <div class="icon-btn" onclick="location.reload()">
+                <div class="icon-btn">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"></path>
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
                 </div>
                 <a href="/logout" class="icon-btn" title="Logout">
@@ -1596,22 +1356,6 @@ const server = http.createServer((req, res) => {
                 <div class="profile-avatar">${userData.username[0].toUpperCase()}</div>
             </div>
         </div>
-
-        <div id="premiumModal" class="modal">
-            <div class="modal-content">
-                <h2 class="modal-title">Harras Premium</h2>
-                <p class="modal-desc">Be able to spawn 90+ bots and control your bots using your mouse, to activate premium please boost the server</p>
-                <button class="modal-close" onclick="hidePremium()">Got it</button>
-            </div>
-        </div>
-
-        <script>
-            function showPremium() { document.getElementById('premiumModal').style.display = 'flex'; }
-            function hidePremium() { document.getElementById('premiumModal').style.display = 'none'; }
-            window.onclick = function(event) {
-                if (event.target == document.getElementById('premiumModal')) hidePremium();
-            }
-        </script>
         
         <div class="section">
             <h2>Privacy</h2>
@@ -1620,31 +1364,30 @@ const server = http.createServer((req, res) => {
                     <div class="setting-label">Show on Leaderboards</div>
                     <div class="setting-desc">Display your stats on public leaderboards</div>
                 </div>
-                <div class="toggle" id="leaderboardToggle" onclick="toggleLeaderboard()">
+                <div class="toggle" id="leaderboardToggle" onclick="raz_or()">
                     <div class="toggle-slider"></div>
                 </div>
             </div>
         </div>
     </div>
-
+    
     <script>
-        let showOnLeaderboard = ${userData.showInLeaderboard || false};
-        function toggleLeaderboard() {
-            showOnLeaderboard = !showOnLeaderboard;
-            const toggleBtn = document.getElementById('leaderboardToggle');
-            const slider = toggleBtn.querySelector('.toggle-slider');
-            if (showOnLeaderboard) {
-                toggleBtn.style.background = 'linear-gradient(135deg, #8b5cf6, #ec4899)';
-                slider.style.left = '28px';
+        let razor = ${userData.showInLeaderboard || false};
+        function raz_or() {
+            razor = !razor;
+            const raZor = document.getElementById('leaderboardToggle');
+            const rAzor = raZor.querySelector('.toggle-slider');
+            if (razor) {
+                raZor.style.background = 'linear-gradient(135deg, #8b5cf6, #ec4899)';
+                rAzor.style.left = '28px';
             } else {
-                toggleBtn.style.background = 'rgba(255, 255, 255, 0.05)';
-                slider.style.left = '4px';
+                raZor.style.background = 'rgba(255, 255, 255, 0.05)';
+                rAzor.style.left = '4px';
             }
-            
             fetch('/api/leaderboard-preference', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: '${session.userId}', show: showOnLeaderboard })
+                body: JSON.stringify({ userId: '${session.userId}', show: razor })
             });
         }
     </script>
@@ -1695,7 +1438,7 @@ const server = http.createServer((req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harras | Leaderboards</title>
+    <title>Leaderboards</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -1705,43 +1448,36 @@ const server = http.createServer((req, res) => {
         }
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: #050505;
+            background-color: #08080a;
             color: #ffffff;
             min-height: 100vh;
             padding: 40px 24px;
             position: relative;
             overflow-x: hidden;
-            perspective: 1000px;
         }
         .glow-bg {
             position: absolute;
             width: 800px;
             height: 800px;
-            background: radial-gradient(circle, rgba(46, 204, 113, 0.08) 0%, transparent 65%);
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 65%);
             border-radius: 50%;
             top: -300px;
             left: -100px;
             filter: blur(100px);
             pointer-events: none;
             z-index: 1;
-            animation: float 20s infinite alternate;
-        }
-        @keyframes float {
-            0% { transform: translate(0,0); }
-            100% { transform: translate(30px, 30px); }
         }
         .container {
             max-width: 1000px;
             margin: 0 auto;
             position: relative;
             z-index: 2;
-            transform-style: preserve-3d;
         }
         .nav-bar {
-            background: rgba(15, 15, 20, 0.7);
+            background: rgba(13, 13, 17, 0.6);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(46, 204, 113, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 24px;
             padding: 16px 28px;
             display: flex;
@@ -1749,12 +1485,6 @@ const server = http.createServer((req, res) => {
             align-items: center;
             margin-bottom: 40px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            transform: translateZ(20px);
-            animation: nav-float 4s infinite ease-in-out;
-        }
-        @keyframes nav-float {
-            0%, 100% { transform: translateZ(20px) translateY(0); }
-            50% { transform: translateZ(30px) translateY(-5px); }
         }
         .nav-left {
             display: flex;
@@ -1764,8 +1494,8 @@ const server = http.createServer((req, res) => {
         .logo-box {
             width: 36px;
             height: 36px;
-            background: rgba(46, 204, 113, 0.1);
-            border: 1px solid rgba(46, 204, 113, 0.3);
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -1775,7 +1505,7 @@ const server = http.createServer((req, res) => {
             font-size: 20px;
             font-weight: 700;
             letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #ffffff 0%, #2ecc71 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #a78bfa 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -1798,15 +1528,10 @@ const server = http.createServer((req, res) => {
         }
         .nav-link:hover {
             color: #ffffff;
-            background: rgba(255, 255, 255, 0.05);
         }
         .nav-link.active {
             background: #ffffff;
-            color: #050505;
-        }
-        .nav-link.premium {
-            color: #f1c40f;
-            font-weight: 600;
+            color: #09090b;
         }
         .nav-right {
             display: flex;
@@ -1829,13 +1554,12 @@ const server = http.createServer((req, res) => {
         .icon-btn:hover {
             background: rgba(255, 255, 255, 0.08);
             color: #ffffff;
-            transform: rotate(15deg);
         }
         .profile-avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1844,18 +1568,12 @@ const server = http.createServer((req, res) => {
             border: 2px solid rgba(255, 255, 255, 0.1);
         }
         .leaderboard {
-            background: rgba(15, 15, 20, 0.7);
+            background: rgba(13, 13, 17, 0.6);
             backdrop-filter: blur(24px);
-            border: 1px solid rgba(46, 204, 113, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 24px;
             padding: 32px 40px;
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
-            transform: translateZ(10px);
-            animation: leaderboard-3d 12s infinite ease-in-out;
-        }
-        @keyframes leaderboard-3d {
-            0%, 100% { transform: translateZ(10px) rotateY(0); }
-            50% { transform: translateZ(20px) rotateY(1deg); }
         }
         .leaderboard h2 {
             color: #ffffff;
@@ -1878,22 +1596,21 @@ const server = http.createServer((req, res) => {
             border: 1px solid rgba(255, 255, 255, 0.04);
             border-radius: 16px;
             align-items: center;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.2s ease;
         }
         .leaderboard-item:hover {
             background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(46, 204, 113, 0.3);
-            transform: scale(1.02) translateZ(15px);
-            box-shadow: 0 10px 30px rgba(46, 204, 113, 0.1);
+            border-color: rgba(255, 255, 255, 0.08);
+            transform: scale(1.005);
         }
         .leaderboard-item.current-user {
-            background: rgba(46, 204, 113, 0.08);
-            border-color: rgba(46, 204, 113, 0.3);
+            background: rgba(139, 92, 246, 0.08);
+            border-color: rgba(139, 92, 246, 0.3);
         }
         .rank {
             font-size: 18px;
             font-weight: 700;
-            color: #2ecc71;
+            color: #a78bfa;
         }
         .username {
             color: #ffffff;
@@ -1915,67 +1632,6 @@ const server = http.createServer((req, res) => {
             padding: 60px 20px;
             color: rgba(255, 255, 255, 0.4);
         }
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: rgba(15, 15, 20, 0.9);
-            border: 1px solid rgba(46, 204, 113, 0.2);
-            border-radius: 32px;
-            padding: 48px;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
-            transform-style: preserve-3d;
-            animation: container-3d 6s infinite ease-in-out;
-        }
-        .modal-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #ffffff;
-            transform: translateZ(30px);
-        }
-        .modal-desc {
-            color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 32px;
-            line-height: 1.6;
-            transform: translateZ(20px);
-        }
-        .modal-close {
-            background: #2ecc71;
-            color: white;
-            border: none;
-            padding: 14px 32px;
-            border-radius: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s;
-            transform: translateZ(25px);
-        }
-        .modal-close:hover {
-            transform: translateY(-2px) translateZ(35px);
-            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3);
-        }
-        @keyframes container-3d {
-            0%, 100% { transform: rotateY(0deg) rotateX(0deg); }
-            25% { transform: rotateY(2deg) rotateX(1deg); }
-            75% { transform: rotateY(-2deg) rotateX(-1deg); }
-        }
     </style>
 </head>
 <body>
@@ -1985,21 +1641,20 @@ const server = http.createServer((req, res) => {
             <div class="nav-left">
                 <div class="logo-box">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#2ecc71"/>
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#a78bfa"/>
                     </svg>
                 </div>
-                <div class="logo-text">Harras</div>
+                <div class="logo-text">Loud</div>
             </div>
             <div class="nav-links">
                 <a href="/dashboard" class="nav-link">Dashboard</a>
                 <a href="/leaderboards" class="nav-link active">Leaderboards</a>
                 <a href="/settings" class="nav-link">Settings</a>
-                <a href="#" class="nav-link premium" onclick="showPremium()">Premium</a>
             </div>
             <div class="nav-right">
-                <div class="icon-btn" onclick="location.reload()">
+                <div class="icon-btn">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"></path>
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
                 </div>
                 <a href="/logout" class="icon-btn" title="Logout">
@@ -2010,22 +1665,6 @@ const server = http.createServer((req, res) => {
                 <div class="profile-avatar">${userData.username[0].toUpperCase()}</div>
             </div>
         </div>
-
-        <div id="premiumModal" class="modal">
-            <div class="modal-content">
-                <h2 class="modal-title">Harras Premium</h2>
-                <p class="modal-desc">Be able to spawn 90+ bots and control your bots using your mouse, to activate premium please boost the server</p>
-                <button class="modal-close" onclick="hidePremium()">Got it</button>
-            </div>
-        </div>
-
-        <script>
-            function showPremium() { document.getElementById('premiumModal').style.display = 'flex'; }
-            function hidePremium() { document.getElementById('premiumModal').style.display = 'none'; }
-            window.onclick = function(event) {
-                if (event.target == document.getElementById('premiumModal')) hidePremium();
-            }
-        </script>
         
         <div class="leaderboard">
             <h2>Top Bot Spawners</h2>
@@ -2088,8 +1727,8 @@ const server = http.createServer((req, res) => {
 
     res.writeHead(200, { "Content-Type": "text/plain" });
     res.end("Bot is running\n");
-    } catch (error) {
-        console.error(error);
+    } catch (raZor) {
+        console.error(raZor);
         res.writeHead(500, { "Content-Type": "text/plain" });
         res.end("Internal Server Error\n");
     }
@@ -2803,25 +2442,6 @@ client.on("interactionCreate", async (interaction) => {
             interaction.commandName === "premium-farm";
         const userId = interaction.user.id;
 
-        let premiumKey = null;
-        if (interaction.commandName === "premium-farm") {
-            premiumKey = getKeyForUser(userId);
-            if (!premiumKey) {
-                const errEmbed = new EmbedBuilder()
-                    .setColor(0xff0000)
-                    .setTitle("system: access denied")
-                    .setDescription(
-                        "You're not a premium user, boost the server 2 times in order to get Harras premium",
-                    )
-                    .setTimestamp();
-
-                return await interaction.reply({
-                    embeds: [errEmbed],
-                    ephemeral: true,
-                });
-            }
-        }
-
         if (isFarm) {
             const cooldowns = loadCooldowns();
             const now = Date.now();
@@ -2876,18 +2496,34 @@ client.on("interactionCreate", async (interaction) => {
                 ? interaction.options.getInteger("amount") || 30
                 : 30;
 
+        // Track bot spawns for statistics
+        if (isFarm) {
+            incrementBotCount(userId, amount);
+        }
+
+        let premiumKey = null;
+        if (interaction.commandName === "premium-farm") {
+            premiumKey = getKeyForUser(userId);
+            if (!premiumKey) {
+                const errEmbed = new EmbedBuilder()
+                    .setColor(0xff0000)
+                    .setTitle("system: access denied")
+                    .setDescription(
+                        "You're not a premium user, boost the server 2 times in order to get Harras premium",
+                    )
+                    .setTimestamp();
+
+                return await interaction.reply({
+                    embeds: [errEmbed],
+                    ephemeral: true,
+                });
+            }
+        }
+
         const initialHash = hashInput.startsWith("#")
             ? hashInput
             : "#" + hashInput;
         const squadId = initialHash.slice(1);
-
-        // Track bot spawns for statistics
-        if (isFarm) {
-            incrementBotCount(userId, amount);
-            sendWebhookLog(`30 feeding bots sent to ${initialHash} etc..`);
-        } else {
-            sendWebhookLog(`30 feeding bots sent to ${initialHash} etc..`);
-        }
 
         if (isFarm) {
             farmQueue.push({
