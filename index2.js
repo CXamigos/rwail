@@ -20,7 +20,7 @@
       return;
     }
     process.on("message", handler);
-  };
+  }; // yah
 
   // ===== CHECK FOR COMMAND LINE ARGUMENTS =====
   const args = process.argv.slice(2);
