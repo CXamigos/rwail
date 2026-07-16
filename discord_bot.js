@@ -3189,31 +3189,14 @@ const commands = [
                 .setDescription("select bot tank class")
                 .setRequired(false)
                 .addChoices(
-                    { name: "Basic", value: "basic" },
                     { name: "Auto 4", value: "auto4" },
-                    { name: "Annihilator", value: "anni" },
-                    { name: "Penta Shot", value: "penta" },
-                    { name: "Octo Tank", value: "octo" },
                     { name: "Spike", value: "spike" },
-                    { name: "Auto Overlord", value: "autooverlord" },
-                    { name: "Auto Necro", value: "autonecro" },
-                    { name: "Factory", value: "factory" },
-                    { name: "Spread Shot", value: "spread" },
-                    { name: "Triplet", value: "triplet" },
-                    { name: "Predator", value: "predator" },
-                    { name: "Cyclone", value: "cyclone" },
-                    { name: "Engineer", value: "engineer" },
-                    { name: "Auto 5", value: "auto5" },
-                    { name: "Skimmer", value: "skimmer" },
-                    { name: "Swarmer", value: "swarmer" },
-                    { name: "Fighter", value: "fighter" },
-                    { name: "Rocket", value: "rocket" },
-                    { name: "Booster", value: "booster" },
-                    { name: "Auto Smasher", value: "autoshasher" },
-                    { name: "Landmine", value: "landmine" },
-                    { name: "Mega Spike", value: "megaspike" },
+                    { name: "Smasher", value: "smasher" },
                     { name: "Twin", value: "twin" },
-                    { name: "Sniper", value: "sniper" },
+                    { name: "Penta Shot", value: "pentashot" },
+                    { name: "Cyclone", value: "cyclone" },
+                    { name: "Sidewinder", value: "sidewinder" },
+                    { name: "Banshee", value: "banshee" },
                 ),
         )
         .addStringOption((option) =>
@@ -3285,18 +3268,14 @@ const commands = [
                 .setDescription("select bot tank class")
                 .setRequired(false)
                 .addChoices(
-                    { name: "Basic", value: "basic" },
                     { name: "Auto 4", value: "auto4" },
-                    { name: "Annihilator", value: "anni" },
-                    { name: "Penta Shot", value: "penta" },
-                    { name: "Octo Tank", value: "octo" },
                     { name: "Spike", value: "spike" },
-                    { name: "Auto Overlord", value: "autooverlord" },
-                    { name: "Auto Necro", value: "autonecro" },
-                    { name: "Factory", value: "factory" },
-                    { name: "Spread Shot", value: "spread" },
-                    { name: "Triplet", value: "triplet" },
-                    { name: "Predator", value: "predator" },
+                    { name: "Smasher", value: "smasher" },
+                    { name: "Twin", value: "twin" },
+                    { name: "Penta Shot", value: "pentashot" },
+                    { name: "Cyclone", value: "cyclone" },
+                    { name: "Sidewinder", value: "sidewinder" },
+                    { name: "Banshee", value: "banshee" },
                 ),
         )
         .addStringOption((option) =>
@@ -3744,8 +3723,8 @@ client.on("interactionCreate", async (interaction) => {
             ? interaction.options.getString("autofire") === "yes"
             : false;
         const tank = isFarm
-            ? interaction.options.getString("tank") || "Auto4"
-            : "Auto4";
+            ? interaction.options.getString("tank") || "auto4"
+            : "auto4";
         const amount =
             isFarm && isBypassUser
                 ? interaction.options.getInteger("amount") || 30
@@ -3993,6 +3972,8 @@ async function handleFarmWebSocket(interaction, config) {
         tank,
         amount,
     } = config;
+
+    console.log(`[DEBUG handleFarmWebSocket] Received config: targetX=${targetX}, targetY=${targetY}, tank=${tank}, autoFire=${autoFire}`);
 
     const terminateRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -4267,37 +4248,43 @@ async function handleFarmWebSocket(interaction, config) {
 
                 // Apply tank upgrades based on tank selection
                 const tankUpgrades = {
-                    "Auto4": [3, 2, 2],
-                    "Spike": [8, 1],
-                    "Smasher": [8, 0],
-                    "Twin": [0],
-                    "Pentashot": [0, 1, 0],
-                    "Cyclone": [3, 0, 1],
-                    "Sidewinder": [5, 3, 3],
-                    "Banshee": [3, 2, 3],
+                    "spike": [8, 1],
+                    "smasher": [8, 0],
+                    "cyclone": [3, 0, 1],
+                    "auto4": [3, 2, 2],
+                    "twin": [0],
+                    "pentashot": [0, 1, 0],
+                    "sidewinder": [5, 3, 3],
+                    "banshee": [3, 2, 3],
                 };
 
                 const tankSkills = {
-                    "Auto4": [4, 5, 6, 7, 8],
-                    "Spike": [1, 9, 8, 0],
-                    "Smasher": [2, 7, 8, 9],
-                    "Twin": [4, 5, 6, 7],
-                    "Pentashot": [4, 5, 6, 7],
-                    "Cyclone": [0, 0, 6, 9, 9, 9, 9, 0, 0, 0],
-                    "Sidewinder": [4, 5, 6, 7],
-                    "Banshee": [4, 5, 6, 7],
+                    "spike": [1, 9, 8, 0],
+                    "smasher": [2, 7, 8, 9],
+                    "cyclone": [0, 0, 6, 9, 9, 9, 9, 0, 0, 0],
+                    "auto4": [4, 5, 6, 7, 8],
+                    "twin": [4, 5, 6, 7],
+                    "pentashot": [4, 5, 6, 7],
+                    "sidewinder": [4, 5, 6, 7],
+                    "banshee": [4, 5, 6, 7],
                 };
 
                 // Apply upgrades
-                const upgrades = tankUpgrades[tank] || tankUpgrades["Auto4"];
+                const upgrades = tankUpgrades[tank.toLowerCase()] || tankUpgrades["auto4"];
                 for (const upgrade of upgrades) {
                     botClient.send(clientPackets.U(upgrade));
                 }
 
                 // Apply skills
-                const skills = tankSkills[tank] || tankSkills["Auto4"];
+                const skills = tankSkills[tank.toLowerCase()] || tankSkills["auto4"];
                 for (const skill of skills) {
                     botClient.send(clientPackets.x(skill, "max"));
+                }
+
+                // Toggle autofire if user requested it
+                // The game has a separate autofire toggle that's independent of lmb key press
+                if (autoFire) {
+                    botClient.send(clientPackets.t("autofire"));
                 }
 
                 // Send movement inputs
@@ -4320,7 +4307,7 @@ async function handleFarmWebSocket(interaction, config) {
 
                     // Calculate movement based on target coordinates or direction
                     if (targetX !== null && targetY !== null) {
-                        // Calculate angle from current position to target
+                        // Calculate direction to target
                         const dx = targetX - bot.position.x;
                         const dy = targetY - bot.position.y;
                         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -4328,32 +4315,36 @@ async function handleFarmWebSocket(interaction, config) {
 
                         const THRESHOLD = 50;
                         
+                        // Debug log once every 100 iterations
+                        if (Math.random() < 0.01) {
+                            console.log(`[Bot ${i}] pos=(${bot.position.x.toFixed(0)}, ${bot.position.y.toFixed(0)}) target=(${targetX}, ${targetY}) dist=${distance.toFixed(0)}`);
+                        }
+                        
                         if (distance > THRESHOLD) {
-                            // Use 8-direction movement based on angle (matching index.js pathfind logic)
-                            const PI_8 = Math.PI / 8;
-                            
-                            if (angle >= -PI_8 && angle < PI_8) {
+                            // Use WASD keys to control movement direction based on angle
+                            // Perfect 8-direction movement (same as index.js pathfind function)
+                            if (angle >= -Math.PI / 8 && angle < Math.PI / 8) {
                                 // Right
                                 keys.right = true;
-                            } else if (angle >= PI_8 && angle < 3 * PI_8) {
+                            } else if (angle >= Math.PI / 8 && angle < 3 * Math.PI / 8) {
                                 // Down-Right
                                 keys.down = true;
                                 keys.right = true;
-                            } else if (angle >= 3 * PI_8 && angle < 5 * PI_8) {
+                            } else if (angle >= 3 * Math.PI / 8 && angle < 5 * Math.PI / 8) {
                                 // Down
                                 keys.down = true;
-                            } else if (angle >= 5 * PI_8 && angle < 7 * PI_8) {
+                            } else if (angle >= 5 * Math.PI / 8 && angle < 7 * Math.PI / 8) {
                                 // Down-Left
                                 keys.down = true;
                                 keys.left = true;
-                            } else if (angle >= 7 * PI_8 || angle < -7 * PI_8) {
+                            } else if (angle >= 7 * Math.PI / 8 || angle < -7 * Math.PI / 8) {
                                 // Left
                                 keys.left = true;
-                            } else if (angle >= -7 * PI_8 && angle < -5 * PI_8) {
+                            } else if (angle >= -7 * Math.PI / 8 && angle < -5 * Math.PI / 8) {
                                 // Up-Left
                                 keys.up = true;
                                 keys.left = true;
-                            } else if (angle >= -5 * PI_8 && angle < -3 * PI_8) {
+                            } else if (angle >= -5 * Math.PI / 8 && angle < -3 * Math.PI / 8) {
                                 // Up
                                 keys.up = true;
                             } else {
@@ -4362,11 +4353,11 @@ async function handleFarmWebSocket(interaction, config) {
                                 keys.right = true;
                             }
                             
-                            // Set mouse aim direction (200 pixels from center matching index.js)
+                            // Point mouse in the same direction for aiming
                             moveX = Math.cos(angle) * 200;
                             moveY = Math.sin(angle) * 200;
                         } else {
-                            // At target - just aim, don't move
+                            // At target - stop moving
                             moveX = 0;
                             moveY = 0;
                         }
@@ -4394,6 +4385,10 @@ async function handleFarmWebSocket(interaction, config) {
 
                     // Send input packet using correct API
                     if (typeof clientPackets.C === "function") {
+                        // Debug: log what we're sending occasionally
+                        if (Math.random() < 0.01) {
+                            console.log(`[Bot ${i} INPUT] moveX=${moveX.toFixed(0)}, moveY=${moveY.toFixed(0)}, keys:`, keys);
+                        }
                         bot.client.send(
                             clientPackets.C(moveX, moveY, keys)
                         );
