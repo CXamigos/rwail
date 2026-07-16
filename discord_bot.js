@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const {
     Client,
     GatewayIntentBits,
@@ -38,6 +40,89 @@ const PREMIUM_MODAL_DESCRIPTION =
 function buildGameLink(hash) {
     const normalizedHash = hash.startsWith("#") ? hash : `#${hash}`;
     return `https://arras.io/${normalizedHash}`;
+}
+
+function getHostFromFile(serverName) {
+    try {
+        const filePath = path.join(__dirname, "lib", "servers.txt");
+        const rawData = fs.readFileSync(filePath, "utf8");
+        const data = JSON.parse(rawData);
+
+        if (data.status && data.status[serverName]) {
+            return data.status[serverName].host;
+        }
+        return `Server "${serverName}" not found.`;
+    } catch (error) {
+        return `Error reading or parsing file: ${error.message}`;
+    }
+}
+
+function resolvePartyCode(partyCode) {
+    let host = "";
+    let party = "";
+    
+    // Check if it's already a full host URL
+    if (partyCode.includes(".") || partyCode.includes(":")) {
+        return { host: partyCode, party: "" };
+    }
+    
+    // Check if it's a party link format like "ca2559" (server + party ID)
+    // Extract server name (first 2-3 chars) and party ID (remaining digits)
+    const serverMatch = partyCode.match(/^([a-zA-Z]{2,3})(\d+)?$/);
+    
+    if (serverMatch) {
+        const serverName = serverMatch[1].toLowerCase();
+        party = serverMatch[2] || "";
+        
+        host = getHostFromFile(serverName);
+        if (host && !host.startsWith("Server") && !host.startsWith("Error")) {
+            if (party) {
+                console.log(`[system] Resolved party code "${partyCode}" to server "${serverName}" with party "${party}"`);
+            } else {
+                console.log(`[system] Resolved server "${serverName}"`);
+            }
+            return { host, party };
+        }
+        
+        if (!host || host.startsWith("Server") || host.startsWith("Error")) {
+            return { 
+                host: `Server "${serverName}" not found in servers.txt`, 
+                party: "" 
+            };
+        }
+    }
+    
+    // Try direct server name lookup
+    host = getHostFromFile(partyCode);
+    if (host && !host.startsWith("Server") && !host.startsWith("Error")) {
+        return { host, party: "" };
+    }
+    
+    // Try to find server by party code in servers.txt
+    try {
+        const filePath = path.join(__dirname, "lib", "servers.txt");
+        const rawData = fs.readFileSync(filePath, "utf8");
+        const data = JSON.parse(rawData);
+        
+        if (data.status) {
+            for (const [serverName, serverData] of Object.entries(data.status)) {
+                if (serverData.code === partyCode) {
+                    console.log(`[system] Found server "${serverName}" with code "${partyCode}"`);
+                    return { host: serverData.host, party: "" };
+                }
+            }
+        }
+        
+        return { 
+            host: `Unable to resolve "${partyCode}". Use format like "ca2559" (server + party) or just "ca" for server name.`, 
+            party: "" 
+        };
+    } catch (error) {
+        return { 
+            host: `Error resolving: ${error.message}`, 
+            party: "" 
+        };
+    }
 }
 
 function formatWebhookLog(commandName, data) {
@@ -3663,8 +3748,8 @@ client.on("interactionCreate", async (interaction) => {
             : "Auto4";
         const amount =
             isFarm && isBypassUser
-                ? interaction.options.getInteger("amount") || 10
-                : 10;
+                ? interaction.options.getInteger("amount") || 20
+                : 20;
 
         const initialHash = hashInput.startsWith("#")
             ? hashInput
@@ -3700,10 +3785,10 @@ client.on("interactionCreate", async (interaction) => {
             // Defer reply immediately to prevent timeout
             await interaction.deferReply();
             
-            farmQueue.push({
-                interaction,
-                commandName: interaction.commandName,
-                hashInput,
+            // Use WebSocket-based farm handler
+            await handleFarmWebSocket(interaction, {
+                initialHash,
+                squadId,
                 targetX,
                 targetY,
                 followMouse,
@@ -3711,30 +3796,7 @@ client.on("interactionCreate", async (interaction) => {
                 autoFire,
                 tank,
                 amount,
-                initialHash,
-                squadId,
-                premiumKey,
             });
-
-            if (farmQueue.length > 1) {
-                const queueEmbed = new EmbedBuilder()
-                    .setColor(ACCENT_EMBED)
-                    .setTitle("system: queued")
-                    .setDescription(
-                        "```\nstatus: [ in queue ]\nposition: [ " +
-                            (farmQueue.length - 1) +
-                            " ]\nnotice: [ starting soon ]\n```",
-                    )
-                    .setFooter({ text: "want more bots? dm h1" })
-                    .setTimestamp();
-
-                await interaction.editReply({ embeds: [queueEmbed] });
-                return;
-            }
-
-            if (!isProcessingQueue) {
-                processQueue();
-            }
         } else {
             // Original find logic
             const teams = interaction.options.getInteger("teams") || 2;
@@ -3744,6 +3806,8 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 async function handleFind(interaction, initialHash, squadId, targetTeams = 2) {
+    const { ArrasClient, clientPackets } = require("./lib/arras-client");
+    
     const waitEmbed = new EmbedBuilder()
         .setColor(ACCENT_EMBED)
         .setTitle("system: initializing")
@@ -3762,15 +3826,19 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2) {
 
     let botLinks = new Set();
     let isFinished = false;
-    let activeWorkers = [];
-    let attempts = 0;
-    const MAX_ATTEMPTS = 60; // 60 seconds total
+    let activeBots = [];
 
     const finish = async () => {
         if (isFinished) return;
         isFinished = true;
-        activeWorkers.forEach((w) => {
-            shutdownBotWorker(w);
+        
+        // Disconnect all bots
+        activeBots.forEach((bot) => {
+            if (bot && bot.client) {
+                try {
+                    bot.client.ws.close();
+                } catch (e) {}
+            }
         });
 
         const uniqueLinks = Array.from(botLinks);
@@ -3821,55 +3889,77 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2) {
 
     const timeout = setTimeout(finish, 60000);
 
-    const spawnBot = (id) => {
+    const spawnBot = async (id) => {
         if (isFinished) return;
-        const proxyIdx = id % PROXIES.length;
-        const worker = createBotWorker();
-        activeWorkers.push(worker);
+        
+        try {
+            // Parse hash to get server and party ID
+            const cleanHash = initialHash.replace('#', '');
+            const { host, party } = resolvePartyCode(cleanHash);
+            
+            // Check if server resolution failed
+            if (host.startsWith("Server") || host.startsWith("Unable") || host.startsWith("Error")) {
+                console.error(`[system] Bot ${id} failed to resolve server: ${host}`);
+                return;
+            }
+            
+            console.log(`[system] Bot ${id} connecting to ${host}${party ? ` (Party: ${party})` : ''}`);
+            
+            const client = new ArrasClient(host, {
+                playerName: "discord.gg/fQFTCMC5hY",
+                partyId: party,
+                autoLevelUp: true,
+            });
+            
+            const botState = {
+                id,
+                client,
+                connected: false,
+                hash: null,
+            };
+            
+            activeBots.push(botState);
+            
+            // Handle update packets to get the partyCode
+            client.on("u", (data) => {
+                if (data.partyCode && !isFinished) {
+                    const currentHash = data.partyCode;
+                    botState.hash = currentHash;
+                    
+                    const link = buildGameLink(currentHash);
+                    
+                    // Only add links that have digits (party codes)
+                    if (/\d/.test(currentHash) && !botLinks.has(link)) {
+                        console.log(`[system] Bot ${id} found unique link: ${link}`);
+                        botLinks.add(link);
+                        updateWaitEmbed();
 
-        worker.on("message", (msg) => {
-            if (msg.type === "connected" || msg.type === "hash_update") {
-                const link = buildGameLink(msg.hash);
-                // Link must contain numbers and be unique
-                if (/\d/.test(msg.hash) && !botLinks.has(link)) {
-                    console.log(`[system] found unique link: ${link}`);
-                    botLinks.add(link);
-                    updateWaitEmbed();
-
-                    if (botLinks.size >= targetTeams) {
-                        clearTimeout(timeout);
-                        setTimeout(finish, 1000);
+                        if (botLinks.size >= targetTeams) {
+                            clearTimeout(timeout);
+                            setTimeout(finish, 1000);
+                        }
                     }
                 }
-
-                // If we haven't found enough, and this bot is on a link we already have or no numbers,
-                // we don't necessarily kill it, but we could if we wanted to "force" a new join.
-                // However, the game server usually handles the assignment.
-            }
-        });
-
-        sendBotWorker(worker, {
-            type: "start",
-            config: {
-                id: id,
-                proxy: { type: "http", url: PROXIES[proxyIdx] },
-                hash: initialHash,
-                name: "discord.gg/fQFTCMC5hY",
-                stats: [2, 2, 4, 9, 3, 9, 9, 0, 0, 0],
-                type: "follow",
-                token: "follow-8fe6ca",
-                autoFire: false,
-                autoRespawn: true,
-                keys: [],
-                keysHold: [],
-                tank: "Auto4",
-                chatMessage: "free farm: discord.gg/fQFTCMC5hY",
-                chatSpam: true,
-                squadId: squadId,
-                reconnectAttempts: 10,
-                reconnectDelay: 2000, // Faster reconnect for finding
-            },
-        });
+            });
+            
+            // Handle spawn event
+            client.on("c", () => {
+                console.log(`[system] Bot ${id} spawned`);
+                botState.connected = true;
+            });
+            
+            client.on("error", (err) => {
+                console.error(`[system] Bot ${id} error:`, err.message);
+            });
+            
+            client.on("close", () => {
+                console.log(`[system] Bot ${id} disconnected`);
+                botState.connected = false;
+            });
+            
+        } catch (error) {
+            console.error(`[system] Failed to spawn bot ${id}:`, error.message);
+        }
     };
 
     // Initial 5 bots
@@ -3888,6 +3978,464 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2) {
             }
         }
     }, 15000);
+}
+
+async function handleFarmWebSocket(interaction, config) {
+    const { ArrasClient, clientPackets } = require("./lib/arras-client");
+    const {
+        initialHash,
+        squadId,
+        targetX,
+        targetY,
+        followMouse,
+        direction,
+        autoFire,
+        tank,
+        amount,
+    } = config;
+
+    const terminateRow = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId(`terminate_${interaction.user.id}`)
+            .setLabel("Terminate Swarm")
+            .setStyle(ButtonStyle.Danger),
+    );
+
+    const waitEmbed = new EmbedBuilder()
+        .setColor(ACCENT_EMBED)
+        .setTitle("system: initializing")
+        .setDescription(
+            "```\nstatus: [ connecting... ]\njoining: [ 0 / " +
+                amount +
+                " ]\nsource: [ " +
+                initialHash +
+                " ]\n```",
+        )
+        .setFooter({ text: "want more bots? dm h1" })
+        .setTimestamp();
+
+    waitEmbed.addFields({
+        name: "coordinates",
+        value: `\`x: ${targetX ?? "dynamic"} | y: ${targetY ?? "dynamic"}\``,
+        inline: true,
+    });
+    if (direction) {
+        const dirName = { w: "front", s: "back", a: "left", d: "right" }[
+            direction
+        ];
+        waitEmbed.addFields({
+            name: "direction",
+            value: `\`${dirName}\``,
+            inline: true,
+        });
+    }
+    waitEmbed.addFields({ name: "tank", value: `\`${tank}\``, inline: true });
+    if (followMouse)
+        waitEmbed.addFields({
+            name: "follow mouse",
+            value: "`[ active ]`",
+            inline: true,
+        });
+    if (autoFire)
+        waitEmbed.addFields({
+            name: "autofire",
+            value: "`[ active ]`",
+            inline: true,
+        });
+
+    await interaction.editReply({
+        embeds: [waitEmbed],
+        components: [terminateRow],
+    });
+
+    let activeBots = [];
+    let botsDone = new Set();
+    let botLinks = new Map();
+    let isFinished = false;
+    let lastEditTime = 0;
+    let updateTimeout = null;
+
+    const updateProgress = async () => {
+        if (isFinished) return;
+        const now = Date.now();
+        if (updateTimeout) return;
+        const delay = Math.max(0, 1500 - (now - lastEditTime));
+
+        updateTimeout = setTimeout(async () => {
+            if (isFinished) {
+                updateTimeout = null;
+                return;
+            }
+            lastEditTime = Date.now();
+            updateTimeout = null;
+
+            const progressEmbed = new EmbedBuilder()
+                .setColor(ACCENT_EMBED)
+                .setTitle("system: connecting")
+                .setDescription(
+                    "```\nstatus: [ active ]\njoined: [ " +
+                        botsDone.size +
+                        " / " +
+                        amount +
+                        " ]\nsource: [ " +
+                        initialHash +
+                        " ]\n```",
+                )
+                .setFooter({ text: "want more bots? dm h1" })
+                .setTimestamp();
+
+            progressEmbed.addFields({
+                name: "coordinates",
+                value: `\`x: ${targetX ?? "dynamic"} | y: ${targetY ?? "dynamic"}\``,
+                inline: true,
+            });
+            if (direction) {
+                const dirName = {
+                    w: "front",
+                    s: "back",
+                    a: "left",
+                    d: "right",
+                }[direction];
+                progressEmbed.addFields({
+                    name: "direction",
+                    value: `\`${dirName}\``,
+                    inline: true,
+                });
+            }
+            progressEmbed.addFields({
+                name: "tank",
+                value: `\`${tank}\``,
+                inline: true,
+            });
+            if (followMouse)
+                progressEmbed.addFields({
+                    name: "follow mouse",
+                    value: "`[ active ]`",
+                    inline: true,
+                });
+            if (autoFire)
+                progressEmbed.addFields({
+                    name: "autofire",
+                    value: "`[ active ]`",
+                    inline: true,
+                });
+
+            try {
+                await interaction.editReply({
+                    embeds: [progressEmbed],
+                    components: [terminateRow],
+                });
+            } catch (e) {}
+        }, delay);
+    };
+
+    const finish = async (immediate = false) => {
+        if (isFinished && !immediate) return;
+        isFinished = true;
+
+        if (updateTimeout) clearTimeout(updateTimeout);
+
+        // Close all bot connections
+        activeBots.forEach((bot) => {
+            try {
+                if (bot.moveInterval) {
+                    clearInterval(bot.moveInterval);
+                }
+                if (bot.client && bot.client.ws) {
+                    bot.client.ws.close();
+                }
+            } catch (e) {}
+        });
+        activeBots = [];
+
+        const uniqueLinks = Array.from(new Set(botLinks.values()));
+        const resultEmbed = new EmbedBuilder()
+            .setColor(uniqueLinks.length > 0 ? ACCENT_EMBED : 0xff0000)
+            .setTitle(immediate ? "system: terminated" : "system: bots active")
+            .setFooter({ text: "want more bots? dm h1" })
+            .setTimestamp();
+
+        if (uniqueLinks.length > 0) {
+            let desc =
+                "```\nstatus: [ " +
+                (immediate ? "terminated" : "successful") +
+                " ]\ntarget: [ " +
+                uniqueLinks[0] +
+                " ]\nzone: [ x:" +
+                (targetX ?? "dynamic") +
+                ", y:" +
+                (targetY ?? "dynamic") +
+                " ]\n";
+            if (direction)
+                desc +=
+                    "direction: [ " +
+                    { w: "front", s: "back", a: "left", d: "right" }[
+                        direction
+                    ] +
+                    " ]\n";
+            desc += "tank: [ " + tank + " ]\n";
+            if (followMouse) desc += "follow mouse: [ active ]\n";
+            if (autoFire) desc += "autofire: [ active ]\n";
+            desc +=
+                "count: [ " +
+                botsDone.size +
+                " / " +
+                amount +
+                " units ]\n```";
+            resultEmbed.setDescription(desc);
+        } else {
+            resultEmbed.setDescription("```\nerror: [ no bots connected ]\n```");
+        }
+
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId(`terminate_${interaction.user.id}`)
+                .setLabel("Terminate Swarm")
+                .setStyle(ButtonStyle.Danger)
+                .setDisabled(immediate),
+        );
+
+        await interaction.editReply({
+            embeds: [resultEmbed],
+            components: [row],
+        });
+    };
+
+    // Resolve server from party code
+    const resolved = resolvePartyCode(squadId);
+    if (resolved.host.startsWith("Server") || resolved.host.startsWith("Error") || resolved.host.startsWith("Unable")) {
+        console.log(`[system] Failed to resolve server: ${resolved.host}`);
+        await finish(true);
+        return;
+    }
+
+    const serverHost = resolved.host;
+    const partyId = resolved.party;
+
+    console.log(`[system] Farm: Resolved ${squadId} to host ${serverHost}, party: ${partyId || "none"}`);
+
+    // Spawn bots with WebSocket
+    for (let i = 0; i < amount; i++) {
+        setTimeout(() => {
+            if (isFinished) return;
+
+            const botClient = new ArrasClient(serverHost, {
+                partyId: partyId || null,
+                playerName: "discord.gg/fQFTCMC5hY",
+            });
+
+            const bot = {
+                id: i,
+                client: botClient,
+                position: { x: 0, y: 0 },
+                spawned: false,
+            };
+
+            activeBots.push(bot);
+
+            // Handle death event - respawn
+            botClient.on("F", () => {
+                bot.spawned = false;
+                if (bot.moveInterval) {
+                    clearInterval(bot.moveInterval);
+                    bot.moveInterval = null;
+                }
+                // Send respawn packet
+                botClient.send(clientPackets.s("discord.gg/fQFTCMC5hY", "", { autoLevelUp: true }));
+            });
+
+            // Handle spawn event
+            botClient.on("c", (data) => {
+                bot.spawned = true;
+                const partyCode = data.partyCode || squadId;
+                botLinks.set(i, buildGameLink("#" + partyCode));
+                
+                // Update position from spawn data
+                if (data.bodyX !== undefined && data.bodyY !== undefined) {
+                    bot.position.x = data.bodyX;
+                    bot.position.y = data.bodyY;
+                }
+                
+                if (!botsDone.has(i)) {
+                    botsDone.add(i);
+                    updateProgress();
+                }
+
+                console.log(`[system] Farm Bot ${i} spawned in party: ${partyCode}`);
+                console.log(`[system] Farm Bot ${i} target coordinates: x=${targetX}, y=${targetY}`);
+                console.log(`[system] Farm Bot ${i} current position: x=${bot.position.x}, y=${bot.position.y}`);
+
+                // Apply tank upgrades based on tank selection
+                const tankUpgrades = {
+                    "Auto4": [3, 2, 2],
+                    "Spike": [8, 1],
+                    "Smasher": [8, 0],
+                    "Twin": [0],
+                    "Pentashot": [0, 1, 0],
+                    "Cyclone": [3, 0, 1],
+                    "Sidewinder": [5, 3, 3],
+                    "Banshee": [3, 2, 3],
+                };
+
+                const tankSkills = {
+                    "Auto4": [4, 5, 6, 7, 8],
+                    "Spike": [1, 9, 8, 0],
+                    "Smasher": [2, 7, 8, 9],
+                    "Twin": [4, 5, 6, 7],
+                    "Pentashot": [4, 5, 6, 7],
+                    "Cyclone": [0, 0, 6, 9, 9, 9, 9, 0, 0, 0],
+                    "Sidewinder": [4, 5, 6, 7],
+                    "Banshee": [4, 5, 6, 7],
+                };
+
+                // Apply upgrades
+                const upgrades = tankUpgrades[tank] || tankUpgrades["Auto4"];
+                for (const upgrade of upgrades) {
+                    botClient.send(clientPackets.U(upgrade));
+                }
+
+                // Apply skills
+                const skills = tankSkills[tank] || tankSkills["Auto4"];
+                for (const skill of skills) {
+                    botClient.send(clientPackets.x(skill, "max"));
+                }
+
+                // Send movement inputs
+                const moveInterval = setInterval(() => {
+                    if (isFinished || !bot.spawned) {
+                        clearInterval(moveInterval);
+                        return;
+                    }
+
+                    let moveX = 0;
+                    let moveY = 0;
+                    let keys = {
+                        up: false,
+                        down: false,
+                        left: false,
+                        right: false,
+                        lmb: autoFire,
+                        rmb: false,
+                    };
+
+                    // Calculate movement based on target coordinates or direction
+                    if (targetX !== null && targetY !== null) {
+                        // Calculate angle from current position to target
+                        const dx = targetX - bot.position.x;
+                        const dy = targetY - bot.position.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const angle = Math.atan2(dy, dx);
+
+                        const THRESHOLD = 50;
+                        
+                        if (distance > THRESHOLD) {
+                            // Use 8-direction movement based on angle (matching index.js pathfind logic)
+                            const PI_8 = Math.PI / 8;
+                            
+                            if (angle >= -PI_8 && angle < PI_8) {
+                                // Right
+                                keys.right = true;
+                            } else if (angle >= PI_8 && angle < 3 * PI_8) {
+                                // Down-Right
+                                keys.down = true;
+                                keys.right = true;
+                            } else if (angle >= 3 * PI_8 && angle < 5 * PI_8) {
+                                // Down
+                                keys.down = true;
+                            } else if (angle >= 5 * PI_8 && angle < 7 * PI_8) {
+                                // Down-Left
+                                keys.down = true;
+                                keys.left = true;
+                            } else if (angle >= 7 * PI_8 || angle < -7 * PI_8) {
+                                // Left
+                                keys.left = true;
+                            } else if (angle >= -7 * PI_8 && angle < -5 * PI_8) {
+                                // Up-Left
+                                keys.up = true;
+                                keys.left = true;
+                            } else if (angle >= -5 * PI_8 && angle < -3 * PI_8) {
+                                // Up
+                                keys.up = true;
+                            } else {
+                                // Up-Right
+                                keys.up = true;
+                                keys.right = true;
+                            }
+                            
+                            // Set mouse aim direction (200 pixels from center matching index.js)
+                            moveX = Math.cos(angle) * 200;
+                            moveY = Math.sin(angle) * 200;
+                        } else {
+                            // At target - just aim, don't move
+                            moveX = 0;
+                            moveY = 0;
+                        }
+                    } else if (direction) {
+                        // Move in specified direction
+                        switch (direction) {
+                            case "w":
+                                keys.up = true;
+                                moveY = -200;
+                                break;
+                            case "s":
+                                keys.down = true;
+                                moveY = 200;
+                                break;
+                            case "a":
+                                keys.left = true;
+                                moveX = -200;
+                                break;
+                            case "d":
+                                keys.right = true;
+                                moveX = 200;
+                                break;
+                        }
+                    }
+
+                    // Send input packet using correct API
+                    if (typeof clientPackets.C === "function") {
+                        bot.client.send(
+                            clientPackets.C(moveX, moveY, keys)
+                        );
+                    }
+                }, 300); // Send inputs every 300ms
+                
+                // Store interval for cleanup
+                bot.moveInterval = moveInterval;
+            });
+
+            // Handle update event to track position
+            botClient.on("u", (data) => {
+                if (data.bodyX !== undefined) bot.position.x = data.bodyX;
+                if (data.bodyY !== undefined) bot.position.y = data.bodyY;
+            });
+
+            // Handle errors
+            botClient.on("error", (err) => {
+                console.log(`[system] Farm Bot ${i} error: ${err.message}`);
+            });
+
+            botClient.on("close", () => {
+                console.log(`[system] Farm Bot ${i} disconnected`);
+            });
+
+            console.log(`[system] Farm Bot ${i} connecting to: ${serverHost}`);
+        }, i * 100); // Stagger bot spawns by 100ms
+    }
+
+    // Auto-finish after 35 seconds
+    setTimeout(() => {
+        if (!isFinished) finish();
+    }, 35000);
+
+    // Store session for terminate button
+    global.currentFarmSession = {
+        botsDone,
+        updateProgress,
+        finish: (immediate) => finish(immediate),
+        activeWorkers: [], // Keep for compatibility
+        activeBots, // WebSocket bots
+    };
 }
 
 async function processQueue() {
