@@ -3929,6 +3929,10 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2, sh
             const cleanHash = initialHash.replace('#', '');
             const { host, party } = resolvePartyCode(cleanHash);
             
+            // Extract game mode prefix from the original hash (e.g., "ce" from "ce1234")
+            const gameModeMatch = cleanHash.match(/^([a-zA-Z]+)/);
+            const gameModePrefix = gameModeMatch ? gameModeMatch[1] : '';
+            
             // Check if server resolution failed
             if (host.startsWith("Server") || host.startsWith("Unable") || host.startsWith("Error")) {
                 console.error(`[system] Bot ${id} failed to resolve server: ${host}`);
@@ -3958,11 +3962,13 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2, sh
                     const currentHash = data.partyCode;
                     botState.hash = currentHash;
                     
-                    const link = buildGameLink(currentHash);
+                    // Rebuild the full hash with game mode prefix + party code
+                    const fullHash = gameModePrefix + currentHash;
+                    const link = buildGameLink(fullHash);
                     
                     // Only add links that have digits (party codes)
                     if (/\d/.test(currentHash) && !botLinks.has(link)) {
-                        console.log(`[system] Bot ${id} found unique link: ${link}`);
+                        console.log(`[system] Bot ${id} found unique link: ${link} (mode: ${gameModePrefix}, party: ${currentHash})`);
                         botLinks.add(link);
                         updateWaitEmbed();
 
