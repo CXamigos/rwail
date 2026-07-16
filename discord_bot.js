@@ -3748,8 +3748,8 @@ client.on("interactionCreate", async (interaction) => {
             : "Auto4";
         const amount =
             isFarm && isBypassUser
-                ? interaction.options.getInteger("amount") || 20
-                : 20;
+                ? interaction.options.getInteger("amount") || 30
+                : 30;
 
         const initialHash = hashInput.startsWith("#")
             ? hashInput
