@@ -3231,7 +3231,7 @@ const commands = [
     new SlashCommandBuilder()
         .setName("premium-farm")
         .setDescription(
-            "spawn 15 bots with premium mouse-following capabilities",
+            "spawn 50 bots with premium mouse-following capabilities",
         )
         .setDMPermission(true)
         .addStringOption((option) =>
@@ -3424,20 +3424,14 @@ client.on("interactionCreate", async (interaction) => {
 
     if (!interaction.isChatInputCommand()) return;
 
-    // Check if user is verified (except for /verify command itself)
-    if (
-        interaction.commandName !== "verify" &&
-        !isUserVerified(interaction.user.id)
-    ) {
-        return await interaction.reply({
-            content:
-                "```\nerror: [ verification required ]\nreason: [ use /verify to verify your account ]\n```",
-            ephemeral: true,
-        });
-    }
+    // Check if user is verified - track for reminder but don't block
+    const userIsVerified = isUserVerified(interaction.user.id);
+    const showVerificationReminder = 
+        interaction.commandName !== "verify" && 
+        !userIsVerified;
 
     // Track command usage (only for verified users)
-    if (interaction.commandName !== "verify") {
+    if (interaction.commandName !== "verify" && userIsVerified) {
         trackCommand(interaction.user.id, interaction.commandName);
     }
 
@@ -3594,8 +3588,17 @@ client.on("interactionCreate", async (interaction) => {
         
         // Check if user is verified
         if (!isUserVerified(userId)) {
+            const verifyPromptEmbed = new EmbedBuilder()
+                .setColor(0xffa500)
+                .setTitle("Verification Required")
+                .setDescription(
+                    "The dashboard shows your personal statistics and command history.\n\n" +
+                    "To access it, please use `/verify` first!"
+                )
+                .setFooter({ text: "Verification is quick and easy!" });
+                
             return await interaction.reply({
-                content: "```\nerror: [ verification required ]\nreason: [ use /verify to verify your account ]\n```",
+                embeds: [verifyPromptEmbed],
                 ephemeral: true,
             });
         }
@@ -3727,8 +3730,10 @@ client.on("interactionCreate", async (interaction) => {
             : "auto4";
         const amount =
             isFarm && isBypassUser
-                ? interaction.options.getInteger("amount") || 30
-                : 30;
+                ? interaction.options.getInteger("amount") || (interaction.commandName === "premium-farm" ? 50 : 30)
+                : interaction.commandName === "premium-farm" 
+                    ? 50 
+                    : 30;
 
         const initialHash = hashInput.startsWith("#")
             ? hashInput
@@ -3775,16 +3780,17 @@ client.on("interactionCreate", async (interaction) => {
                 autoFire,
                 tank,
                 amount,
+                showVerificationReminder,
             });
         } else {
             // Original find logic
             const teams = interaction.options.getInteger("teams") || 2;
-            handleFind(interaction, initialHash, squadId, teams);
+            handleFind(interaction, initialHash, squadId, teams, showVerificationReminder);
         }
     }
 });
 
-async function handleFind(interaction, initialHash, squadId, targetTeams = 2) {
+async function handleFind(interaction, initialHash, squadId, targetTeams = 2, showVerificationReminder = false) {
     const { ArrasClient, clientPackets } = require("./lib/arras-client");
     
     const waitEmbed = new EmbedBuilder()
@@ -3801,7 +3807,24 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2) {
             " teams ]\n```",
     );
 
-    await interaction.reply({ embeds: [waitEmbed] });
+    const embeds = [waitEmbed];
+    
+    // Add verification reminder if user is not verified
+    if (showVerificationReminder) {
+        const verifyEmbed = new EmbedBuilder()
+            .setColor(0xffa500)
+            .setTitle("💡 Verification Reminder")
+            .setDescription(
+                "You haven't verified your account yet! Use `/verify` to:\n" +
+                "• Track your command usage\n" +
+                "• Appear on the leaderboard\n" +
+                "• Unlock premium features"
+            )
+            .setFooter({ text: "This is optional - your commands will still work!" });
+        embeds.push(verifyEmbed);
+    }
+
+    await interaction.reply({ embeds });
 
     let botLinks = new Set();
     let isFinished = false;
@@ -3841,7 +3864,22 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2) {
             resultEmbed.setDescription("```\nerror: [ no servers found ]\n```");
         }
 
-        await interaction.editReply({ embeds: [resultEmbed] });
+        const finishEmbeds = [resultEmbed];
+        if (showVerificationReminder) {
+            const verifyEmbed = new EmbedBuilder()
+                .setColor(0xffa500)
+                .setTitle("💡 Verification Reminder")
+                .setDescription(
+                    "You haven't verified your account yet! Use `/verify` to:\n" +
+                    "• Track your command usage\n" +
+                    "• Appear on the leaderboard\n" +
+                    "• Unlock premium features"
+                )
+                .setFooter({ text: "This is optional - your commands will still work!" });
+            finishEmbeds.push(verifyEmbed);
+        }
+
+        await interaction.editReply({ embeds: finishEmbeds });
     };
 
     const updateWaitEmbed = async () => {
@@ -3861,8 +3899,23 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2) {
             .setFooter({ text: "want more bots? dm h1" })
             .setTimestamp();
 
+        const progressEmbeds = [progressEmbed];
+        if (showVerificationReminder) {
+            const verifyEmbed = new EmbedBuilder()
+                .setColor(0xffa500)
+                .setTitle("💡 Verification Reminder")
+                .setDescription(
+                    "You haven't verified your account yet! Use `/verify` to:\n" +
+                    "• Track your command usage\n" +
+                    "• Appear on the leaderboard\n" +
+                    "• Unlock premium features"
+                )
+                .setFooter({ text: "This is optional - your commands will still work!" });
+            progressEmbeds.push(verifyEmbed);
+        }
+
         try {
-            await interaction.editReply({ embeds: [progressEmbed] });
+            await interaction.editReply({ embeds: progressEmbeds });
         } catch (e) {}
     };
 
@@ -3971,6 +4024,7 @@ async function handleFarmWebSocket(interaction, config) {
         autoFire,
         tank,
         amount,
+        showVerificationReminder = false,
     } = config;
 
     console.log(`[DEBUG handleFarmWebSocket] Received config: targetX=${targetX}, targetY=${targetY}, tank=${tank}, autoFire=${autoFire}`);
@@ -4024,8 +4078,25 @@ async function handleFarmWebSocket(interaction, config) {
             inline: true,
         });
 
+    // Build embeds array with optional verification reminder
+    const embeds = [waitEmbed];
+    
+    if (showVerificationReminder) {
+        const verifyEmbed = new EmbedBuilder()
+            .setColor(0xffa500)
+            .setTitle("💡 Verification Reminder")
+            .setDescription(
+                "You haven't verified your account yet! Use `/verify` to:\n" +
+                "• Track your command usage\n" +
+                "• Appear on the leaderboard\n" +
+                "• Unlock premium features"
+            )
+            .setFooter({ text: "This is optional - your commands will still work!" });
+        embeds.push(verifyEmbed);
+    }
+
     await interaction.editReply({
-        embeds: [waitEmbed],
+        embeds,
         components: [terminateRow],
     });
 
@@ -4101,9 +4172,24 @@ async function handleFarmWebSocket(interaction, config) {
                     inline: true,
                 });
 
+            const progressEmbeds = [progressEmbed];
+            if (showVerificationReminder) {
+                const verifyEmbed = new EmbedBuilder()
+                    .setColor(0xffa500)
+                    .setTitle("💡 Verification Reminder")
+                    .setDescription(
+                        "You haven't verified your account yet! Use `/verify` to:\n" +
+                        "• Track your command usage\n" +
+                        "• Appear on the leaderboard\n" +
+                        "• Unlock premium features"
+                    )
+                    .setFooter({ text: "This is optional - your commands will still work!" });
+                progressEmbeds.push(verifyEmbed);
+            }
+
             try {
                 await interaction.editReply({
-                    embeds: [progressEmbed],
+                    embeds: progressEmbeds,
                     components: [terminateRow],
                 });
             } catch (e) {}
@@ -4176,8 +4262,23 @@ async function handleFarmWebSocket(interaction, config) {
                 .setDisabled(immediate),
         );
 
+        const finishEmbeds = [resultEmbed];
+        if (showVerificationReminder) {
+            const verifyEmbed = new EmbedBuilder()
+                .setColor(0xffa500)
+                .setTitle("💡 Verification Reminder")
+                .setDescription(
+                    "You haven't verified your account yet! Use `/verify` to:\n" +
+                    "• Track your command usage\n" +
+                    "• Appear on the leaderboard\n" +
+                    "• Unlock premium features"
+                )
+                .setFooter({ text: "This is optional - your commands will still work!" });
+            finishEmbeds.push(verifyEmbed);
+        }
+
         await interaction.editReply({
-            embeds: [resultEmbed],
+            embeds: finishEmbeds,
             components: [row],
         });
     };
