@@ -2899,6 +2899,7 @@ const VERIFIED_FILE = path.join(__dirname, "verified.txt");
 const VERIFIED_USERS_FILE = path.join(__dirname, "verified_users.json");
 const COMMAND_STATS_FILE = path.join(__dirname, "command_stats.json");
 const SESSIONS_FILE = path.join(__dirname, "sessions.json");
+const FARM_ATTEMPTS_FILE = path.join(__dirname, "farm_attempts.json");
 
 let farmQueue = [];
 let isProcessingQueue = false;
@@ -3063,6 +3064,66 @@ function updateLeaderboardPreference(userId, show) {
         users[userId].showInLeaderboard = show;
         saveVerifiedUsers(users);
     }
+}
+
+// Farm attempts system
+function loadFarmAttempts() {
+    if (!fs.existsSync(FARM_ATTEMPTS_FILE)) return {};
+    try {
+        return JSON.parse(fs.readFileSync(FARM_ATTEMPTS_FILE, "utf8"));
+    } catch (e) {
+        return {};
+    }
+}
+
+function saveFarmAttempts(attempts) {
+    fs.writeFileSync(FARM_ATTEMPTS_FILE, JSON.stringify(attempts, null, 2));
+}
+
+function checkFarmAttempts(userId) {
+    const attempts = loadFarmAttempts();
+    const now = Date.now();
+    const sixHoursMs = 6 * 60 * 60 * 1000; // 6 hours
+    
+    // Initialize user if not exists
+    if (!attempts[userId]) {
+        attempts[userId] = {
+            count: 0,
+            resetAt: now + sixHoursMs,
+        };
+        saveFarmAttempts(attempts);
+    }
+    
+    const userAttempts = attempts[userId];
+    
+    // Check if reset time has passed
+    if (now >= userAttempts.resetAt) {
+        userAttempts.count = 0;
+        userAttempts.resetAt = now + sixHoursMs;
+        saveFarmAttempts(attempts);
+    }
+    
+    return {
+        remaining: Math.max(0, 15 - userAttempts.count),
+        resetAt: userAttempts.resetAt,
+    };
+}
+
+function useFarmAttempt(userId) {
+    const attempts = loadFarmAttempts();
+    
+    if (!attempts[userId]) {
+        const now = Date.now();
+        const sixHoursMs = 6 * 60 * 60 * 1000; // 6 hours
+        attempts[userId] = {
+            count: 1,
+            resetAt: now + sixHoursMs,
+        };
+    } else {
+        attempts[userId].count += 1;
+    }
+    
+    saveFarmAttempts(attempts);
 }
 
 // Command stats system
@@ -3424,6 +3485,39 @@ client.on("interactionCreate", async (interaction) => {
 
     if (!interaction.isChatInputCommand()) return;
 
+    // Check if user is a member of the required server
+    const REQUIRED_SERVER_ID = "1514006353721688146";
+    
+    try {
+        const guild = client.guilds.cache.get(REQUIRED_SERVER_ID);
+        
+        if (!guild) {
+            console.error(`[system] Required server ${REQUIRED_SERVER_ID} not found in cache`);
+        } else {
+            // Try to fetch the member from the guild
+            const member = await guild.members.fetch(interaction.user.id).catch(() => null);
+            
+            if (!member) {
+                const serverCheckEmbed = new EmbedBuilder()
+                    .setColor(0xff0000)
+                    .setTitle("🚫 Access Denied")
+                    .setDescription(
+                        "You must be a member of the official server to use this bot.\n\n" +
+                        "**Join here:** discord.gg/fQFTCMC5hY"
+                    )
+                    .setFooter({ text: "After joining, try the command again!" });
+                
+                return await interaction.reply({
+                    embeds: [serverCheckEmbed],
+                    ephemeral: true,
+                });
+            }
+        }
+    } catch (error) {
+        console.error(`[system] Error checking server membership:`, error);
+        // Continue execution if check fails to avoid blocking legitimate users due to API issues
+    }
+
     // Check if user is verified - track for reminder but don't block
     const userIsVerified = isUserVerified(interaction.user.id);
     const showVerificationReminder = 
@@ -3680,9 +3774,39 @@ client.on("interactionCreate", async (interaction) => {
         }
 
         if (isFarm) {
+            // Check farm attempts (only for regular /farm, not premium-farm)
+            // Users with role 1523633043871498362 have unlimited attempts
+            const hasUnlimitedRole = interaction.member?.roles?.cache?.has("1523633043871498362");
+            const isRegularFarm = interaction.commandName === "farm";
+            
+            if (isRegularFarm && !hasUnlimitedRole && !isBypassUser) {
+                const attemptInfo = checkFarmAttempts(userId);
+                
+                if (attemptInfo.remaining <= 0) {
+                    const resetDate = new Date(attemptInfo.resetAt);
+                    const hoursUntilReset = Math.ceil((attemptInfo.resetAt - Date.now()) / (1000 * 60 * 60));
+                    
+                    const noAttemptsEmbed = new EmbedBuilder()
+                        .setColor(0xff0000)
+                        .setTitle("❌ No Attempts Remaining")
+                        .setDescription(
+                            "```\nstatus: [ rejected ]\nreason: [ daily limit reached ]\nattempts: [ 0 / 15 remaining ]\nresets in: [ " + hoursUntilReset + " hours ]\n```\n\n" +
+                            "**Want unlimited attempts?**\n" +
+                            "Boost the server to get unlimited /farm uses!"
+                        )
+                        .setFooter({ text: "Or use /premium-farm which has no limits!" })
+                        .setTimestamp();
+                    
+                    return await interaction.reply({
+                        embeds: [noAttemptsEmbed],
+                        ephemeral: true,
+                    });
+                }
+            }
+            
             const cooldowns = loadCooldowns();
             const now = Date.now();
-            const cooldownDuration = 60 * 1000; // 50 seconds
+            const cooldownDuration = 60 * 1000; // 60 seconds
 
             if (!isBypassUser && cooldowns[userId] && now < cooldowns[userId]) {
                 const remaining = Math.ceil((cooldowns[userId] - now) / 1000);
@@ -3711,6 +3835,14 @@ client.on("interactionCreate", async (interaction) => {
             // Set new cooldown
             cooldowns[userId] = now + cooldownDuration;
             saveCooldowns(cooldowns);
+            
+            // Use a farm attempt (only for regular /farm, not premium-farm)
+            const hasUnlimitedRole = interaction.member?.roles?.cache?.has("1523633043871498362");
+            const isRegularFarm = interaction.commandName === "farm";
+            
+            if (isRegularFarm && !hasUnlimitedRole && !isBypassUser) {
+                useFarmAttempt(userId);
+            }
         }
 
         const hashInput = interaction.options.getString("hash");
@@ -3769,6 +3901,16 @@ client.on("interactionCreate", async (interaction) => {
             // Defer reply immediately to prevent timeout
             await interaction.deferReply();
             
+            // Get remaining attempts info for regular farm command
+            const hasUnlimitedRole = interaction.member?.roles?.cache?.has("1523633043871498362");
+            const isRegularFarm = interaction.commandName === "farm";
+            let attemptsRemaining = null;
+            
+            if (isRegularFarm && !hasUnlimitedRole && !isBypassUser) {
+                const attemptInfo = checkFarmAttempts(userId);
+                attemptsRemaining = attemptInfo.remaining - 1; // -1 because we already used one
+            }
+            
             // Use WebSocket-based farm handler
             await handleFarmWebSocket(interaction, {
                 initialHash,
@@ -3781,6 +3923,7 @@ client.on("interactionCreate", async (interaction) => {
                 tank,
                 amount,
                 showVerificationReminder,
+                attemptsRemaining,
             });
         } else {
             // Original find logic
@@ -4031,6 +4174,7 @@ async function handleFarmWebSocket(interaction, config) {
         tank,
         amount,
         showVerificationReminder = false,
+        attemptsRemaining = null,
     } = config;
 
     console.log(`[DEBUG handleFarmWebSocket] Received config: targetX=${targetX}, targetY=${targetY}, tank=${tank}, autoFire=${autoFire}`);
@@ -4083,6 +4227,15 @@ async function handleFarmWebSocket(interaction, config) {
             value: "`[ active ]`",
             inline: true,
         });
+    
+    // Show attempts remaining if applicable
+    if (attemptsRemaining !== null) {
+        waitEmbed.addFields({
+            name: "attempts remaining",
+            value: `\`${attemptsRemaining} / 15\``,
+            inline: true,
+        });
+    }
 
     // Build embeds array with optional verification reminder
     const embeds = [waitEmbed];
