@@ -3753,6 +3753,10 @@ client.on("interactionCreate", async (interaction) => {
             interaction.commandName === "premium-farm";
         const userId = interaction.user.id;
         const isBypassUser = BYPASS_USER_IDS.has(userId);
+        
+        // Declare these once for use in multiple isFarm blocks
+        const hasUnlimitedRole = interaction.member?.roles?.cache?.has("1523633043871498362");
+        const isRegularFarm = interaction.commandName === "farm";
 
         let premiumKey = null;
         if (interaction.commandName === "premium-farm") {
@@ -3776,8 +3780,6 @@ client.on("interactionCreate", async (interaction) => {
         if (isFarm) {
             // Check farm attempts (only for regular /farm, not premium-farm)
             // Users with role 1523633043871498362 have unlimited attempts
-            const hasUnlimitedRole = interaction.member?.roles?.cache?.has("1523633043871498362");
-            const isRegularFarm = interaction.commandName === "farm";
             
             if (isRegularFarm && !hasUnlimitedRole && !isBypassUser) {
                 const attemptInfo = checkFarmAttempts(userId);
@@ -3837,9 +3839,6 @@ client.on("interactionCreate", async (interaction) => {
             saveCooldowns(cooldowns);
             
             // Use a farm attempt (only for regular /farm, not premium-farm)
-            const hasUnlimitedRole = interaction.member?.roles?.cache?.has("1523633043871498362");
-            const isRegularFarm = interaction.commandName === "farm";
-            
             if (isRegularFarm && !hasUnlimitedRole && !isBypassUser) {
                 useFarmAttempt(userId);
             }
@@ -3902,8 +3901,7 @@ client.on("interactionCreate", async (interaction) => {
             await interaction.deferReply();
             
             // Get remaining attempts info for regular farm command
-            const hasUnlimitedRole = interaction.member?.roles?.cache?.has("1523633043871498362");
-            const isRegularFarm = interaction.commandName === "farm";
+            // Reuse hasUnlimitedRole and isRegularFarm from earlier
             let attemptsRemaining = null;
             
             if (isRegularFarm && !hasUnlimitedRole && !isBypassUser) {
