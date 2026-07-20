@@ -3759,7 +3759,7 @@ client.on("interactionCreate", async (interaction) => {
         let premiumKey = null;
         if (interaction.commandName === "premium-farm") {
             premiumKey = getKeyForUser(userId);
-            if (!premiumKey && !isBypassUser) {
+            if (!premiumKey && !isBypassUser && !hasUnlimitedRole) {
                 const errEmbed = new EmbedBuilder()
                     .setColor(0xff0000)
                     .setTitle("system: access denied")
