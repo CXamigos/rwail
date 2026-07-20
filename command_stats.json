@@ -1,8 +1,340 @@
 {
   "1289669511280066673": {
+    "farm": 61,
+    "_lastCommand": "leaderboard",
+    "_lastCommandTime": 1784532461086,
+    "find": 37,
+    "dashboard": 11,
+    "premium-farm": 3,
+    "leaderboard": 1
+  },
+  "1185324077188137041": {
+    "farm": 36,
+    "_lastCommand": "find",
+    "_lastCommandTime": 1784306134427,
+    "find": 11
+  },
+  "1430971480698519707": {
+    "farm": 19,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784399708656
+  },
+  "1045099359882203306": {
+    "farm": 63,
+    "_lastCommand": "dashboard",
+    "_lastCommandTime": 1784503897181,
+    "find": 16,
+    "dashboard": 9
+  },
+  "1340052743099777065": {
+    "premium-farm": 262,
+    "_lastCommand": "premium-farm",
+    "_lastCommandTime": 1784518628946,
+    "find": 30,
+    "farm": 44,
+    "connect": 1,
+    "dashboard": 1
+  },
+  "1132434158191394948": {
+    "find": 16,
+    "_lastCommand": "find",
+    "_lastCommandTime": 1784526705169,
+    "farm": 1
+  },
+  "1129399010545909780": {
+    "dashboard": 1,
+    "_lastCommand": "dashboard",
+    "_lastCommandTime": 1784255059230
+  },
+  "975367014640128051": {
+    "farm": 32,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784336513828,
+    "connect": 1,
+    "premium-farm": 3
+  },
+  "926381580262473761": {
+    "find": 12,
+    "_lastCommand": "find",
+    "_lastCommandTime": 1784278088732,
+    "farm": 21
+  },
+  "1504888472328998932": {
+    "find": 10,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784527590639,
+    "farm": 237,
+    "premium-farm": 1,
+    "dashboard": 2
+  },
+  "1488567036618739875": {
+    "premium-farm": 1,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784528703837,
+    "farm": 10
+  },
+  "1316670530224394250": {
+    "farm": 4,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784363342499
+  },
+  "1310309880766398534": {
+    "find": 7,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784468718503,
+    "farm": 47,
+    "dashboard": 1
+  },
+  "1520806349384974418": {
+    "find": 72,
+    "_lastCommand": "find",
+    "_lastCommandTime": 1784421195408
+  },
+  "1523299259355496468": {
+    "farm": 37,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784511048036,
+    "find": 14
+  },
+  "1492043156819152977": {
+    "farm": 34,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784468836156,
+    "premium-farm": 1,
+    "find": 5
+  },
+  "1451920238059847700": {
+    "farm": 35,
+    "_lastCommand": "premium-farm",
+    "_lastCommandTime": 1784349285609,
+    "find": 4,
+    "premium-farm": 1
+  },
+  "1472205923576582244": {
+    "farm": 22,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784294783957,
+    "find": 1
+  },
+  "1449416208762798332": {
+    "farm": 5,
+    "_lastCommand": "premium-farm",
+    "_lastCommandTime": 1784466342439,
+    "premium-farm": 1
+  },
+  "721272408916492299": {
+    "farm": 21,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784305437338
+  },
+  "1464001643707240592": {
     "farm": 18,
     "_lastCommand": "farm",
-    "_lastCommandTime": 1784216312847,
-    "find": 9
+    "_lastCommandTime": 1784383766804,
+    "find": 6
+  },
+  "1500867560604696757": {
+    "farm": 4,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784316934389
+  },
+  "1257776768363004046": {
+    "farm": 31,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784401858732,
+    "find": 1
+  },
+  "1395846600114311379": {
+    "find": 1,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784328114085,
+    "farm": 1
+  },
+  "563314021860900874": {
+    "farm": 26,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784326322161
+  },
+  "1270833316471374007": {
+    "farm": 13,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784326971795
+  },
+  "1523908126213017760": {
+    "farm": 29,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784493425377
+  },
+  "941863029782478899": {
+    "premium-farm": 40,
+    "_lastCommand": "find",
+    "_lastCommandTime": 1784529359910,
+    "find": 11
+  },
+  "1502679245116149790": {
+    "find": 10,
+    "_lastCommand": "premium-farm",
+    "_lastCommandTime": 1784501229574,
+    "farm": 32,
+    "dashboard": 2,
+    "premium-farm": 1
+  },
+  "1491639349232537620": {
+    "farm": 99,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784505745272,
+    "find": 11,
+    "dashboard": 2
+  },
+  "1332467939299033120": {
+    "farm": 9,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784338580257
+  },
+  "846099914446602270": {
+    "farm": 2,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784329182039
+  },
+  "1490484192415580291": {
+    "find": 1,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784389928905,
+    "farm": 12
+  },
+  "1521431064344662058": {
+    "dashboard": 1,
+    "_lastCommand": "find",
+    "_lastCommandTime": 1784523735279,
+    "farm": 1,
+    "find": 1
+  },
+  "1524100658922262610": {
+    "find": 8,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784424001849,
+    "farm": 33
+  },
+  "878020209942859857": {
+    "connect": 3,
+    "_lastCommand": "premium-farm",
+    "_lastCommandTime": 1784501895964,
+    "farm": 10,
+    "find": 7,
+    "premium-farm": 82
+  },
+  "918503618007695370": {
+    "farm": 72,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784488957972,
+    "find": 4
+  },
+  "1328749704502186138": {
+    "farm": 79,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784528950020,
+    "find": 6
+  },
+  "1379828713289416784": {
+    "farm": 66,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784488958934
+  },
+  "1013115086568689725": {
+    "farm": 26,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784480848883
+  },
+  "1250793049039306823": {
+    "farm": 8,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784377129826,
+    "premium-farm": 1
+  },
+  "1440549710204239984": {
+    "find": 4,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784455268701,
+    "farm": 41,
+    "dashboard": 2
+  },
+  "1064865622430859274": {
+    "farm": 1,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784386149959
+  },
+  "1274008184465657938": {
+    "farm": 19,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784495150229,
+    "find": 7,
+    "dashboard": 1
+  },
+  "1347589954552860783": {
+    "farm": 15,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784400933408
+  },
+  "950151155487494224": {
+    "farm": 1,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784397173689
+  },
+  "721780356185063446": {
+    "farm": 4,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784399680362
+  },
+  "951548688076009492": {
+    "farm": 6,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784398907849,
+    "dashboard": 1
+  },
+  "1513105172669403227": {
+    "farm": 30,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784401901129,
+    "find": 1
+  },
+  "1528126858288173176": {
+    "find": 1,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784405960968,
+    "farm": 3
+  },
+  "1120447183553048582": {
+    "find": 2,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784417999200,
+    "farm": 5
+  },
+  "680927857639424052": {
+    "premium-farm": 1,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784418821477,
+    "farm": 2
+  },
+  "1497486878100815953": {
+    "find": 7,
+    "_lastCommand": "find",
+    "_lastCommandTime": 1784514500684
+  },
+  "1145304549603676221": {
+    "premium-farm": 1,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784485711379,
+    "farm": 7
+  },
+  "784399861440184331": {
+    "find": 1,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784476403331,
+    "farm": 1
+  },
+  "1100912005088555119": {
+    "farm": 31,
+    "_lastCommand": "farm",
+    "_lastCommandTime": 1784512985521
   }
 }

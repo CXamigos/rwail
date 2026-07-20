@@ -107,7 +107,7 @@ const rest = new REST({ version: '10' }).setToken(TOKEN);
         console.log('========================================');
         console.log('SLASH COMMAND REGISTRATION TOOL');
         console.log('========================================\n');
-        
+
         console.log(`📝 Commands to register: ${commands.length}`);
         commands.forEach((cmd, i) => {
             console.log(`   ${i + 1}. /${cmd.name}`);
@@ -138,7 +138,7 @@ const rest = new REST({ version: '10' }).setToken(TOKEN);
         console.log('========================================');
         console.log('✨ REGISTRATION COMPLETE');
         console.log('========================================\n');
-        
+
         if (GUILD_ID) {
             console.log('Next steps:');
             console.log('1. Go to your Discord server');
@@ -152,7 +152,7 @@ const rest = new REST({ version: '10' }).setToken(TOKEN);
 
     } catch (error) {
         console.error('❌ Registration failed:', error);
-        
+
         if (error.code === 50001) {
             console.error('\n⚠️  Missing Access - Bot not in guild!');
             console.error('   Make sure the bot is invited to your server.');

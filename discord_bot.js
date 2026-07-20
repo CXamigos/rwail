@@ -60,20 +60,20 @@ function getHostFromFile(serverName) {
 function resolvePartyCode(partyCode) {
     let host = "";
     let party = "";
-    
+
     // Check if it's already a full host URL
     if (partyCode.includes(".") || partyCode.includes(":")) {
         return { host: partyCode, party: "" };
     }
-    
+
     // Check if it's a party link format like "ca2559" (server + party ID)
     // Extract server name (first 2-3 chars) and party ID (remaining digits)
     const serverMatch = partyCode.match(/^([a-zA-Z]{2,3})(\d+)?$/);
-    
+
     if (serverMatch) {
         const serverName = serverMatch[1].toLowerCase();
         party = serverMatch[2] || "";
-        
+
         host = getHostFromFile(serverName);
         if (host && !host.startsWith("Server") && !host.startsWith("Error")) {
             if (party) {
@@ -83,27 +83,27 @@ function resolvePartyCode(partyCode) {
             }
             return { host, party };
         }
-        
+
         if (!host || host.startsWith("Server") || host.startsWith("Error")) {
-            return { 
-                host: `Server "${serverName}" not found in servers.txt`, 
-                party: "" 
+            return {
+                host: `Server "${serverName}" not found in servers.txt`,
+                party: ""
             };
         }
     }
-    
+
     // Try direct server name lookup
     host = getHostFromFile(partyCode);
     if (host && !host.startsWith("Server") && !host.startsWith("Error")) {
         return { host, party: "" };
     }
-    
+
     // Try to find server by party code in servers.txt
     try {
         const filePath = path.join(__dirname, "lib", "servers.txt");
         const rawData = fs.readFileSync(filePath, "utf8");
         const data = JSON.parse(rawData);
-        
+
         if (data.status) {
             for (const [serverName, serverData] of Object.entries(data.status)) {
                 if (serverData.code === partyCode) {
@@ -112,15 +112,15 @@ function resolvePartyCode(partyCode) {
                 }
             }
         }
-        
-        return { 
-            host: `Unable to resolve "${partyCode}". Use format like "ca2559" (server + party) or just "ca" for server name.`, 
-            party: "" 
+
+        return {
+            host: `Unable to resolve "${partyCode}". Use format like "ca2559" (server + party) or just "ca" for server name.`,
+            party: ""
         };
     } catch (error) {
-        return { 
-            host: `Error resolving: ${error.message}`, 
-            party: "" 
+        return {
+            host: `Error resolving: ${error.message}`,
+            party: ""
         };
     }
 }
@@ -135,8 +135,8 @@ function formatWebhookLog(commandName, data) {
         commandName === "premium-farm"
             ? "premium farm"
             : commandName === "farm"
-              ? "farm"
-              : "find";
+                ? "farm"
+                : "find";
     const embed = {
         color: ACCENT_EMBED,
         title:
@@ -238,7 +238,7 @@ class RemoteSwarm {
                     this.flushReadyResolvers(true);
                     console.log(`[system] remote verified: [ ${this.url} ]`);
                 }
-            } catch (e) {}
+            } catch (e) { }
         });
         this.ws.on("close", () => {
             this.verified = false;
@@ -295,7 +295,7 @@ class RemoteSwarm {
         if (this.ws) {
             try {
                 this.ws.close();
-            } catch (e) {}
+            } catch (e) { }
         }
         this.ws = null;
     }
@@ -352,10 +352,10 @@ function shutdownBotWorker(worker) {
     }
     try {
         worker.postMessage({ type: "destroy" });
-    } catch (e) {}
+    } catch (e) { }
     setTimeout(() => {
         if (worker.alive) {
-            worker.terminate().catch(() => {});
+            worker.terminate().catch(() => { });
         }
     }, 250);
 }
@@ -396,7 +396,7 @@ const server = http.createServer((req, res) => {
         if (parsedUrl.pathname === "/magic" && req.method === "GET") {
             const token = parsedUrl.query.token;
             const result = useMagicLink(token);
-            
+
             if (result) {
                 // Valid magic link - set session cookie and redirect to dashboard
                 res.writeHead(302, {
@@ -1742,19 +1742,18 @@ const server = http.createServer((req, res) => {
                 <div class="panel-header">
                     <h2 class="panel-title">Command Usage</h2>
                 </div>
-                ${
-                    commandEntries.length > 0
-                        ? `
+                ${commandEntries.length > 0
+                    ? `
                     <div class="usage-list">
                         ${commandEntries
-                            .sort((a, b) => b[1] - a[1])
-                            .map(([cmd, count]) => {
-                                const commandClass = cmd.includes("premium")
-                                    ? "premium"
-                                    : cmd.includes("farm")
-                                      ? "farm"
-                                      : "other";
-                                return `
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([cmd, count]) => {
+                            const commandClass = cmd.includes("premium")
+                                ? "premium"
+                                : cmd.includes("farm")
+                                    ? "farm"
+                                    : "other";
+                            return `
                                     <div class="usage-item">
                                         <div class="usage-info">
                                             <div class="usage-tag ${commandClass}">/${cmd}</div>
@@ -1763,11 +1762,11 @@ const server = http.createServer((req, res) => {
                                         <div class="usage-count">${count}×</div>
                                     </div>
                                 `;
-                            })
-                            .join("")}
+                        })
+                        .join("")}
                     </div>
                 `
-                        : `
+                    : `
                     <div class="empty-state">
                         <p>No commands used yet</p>
                     </div>
@@ -2723,11 +2722,10 @@ const server = http.createServer((req, res) => {
         <div class="leaderboard">
             <h2>Top Bot Spawners</h2>
             <div class="leaderboard-list">
-                ${
-                    leaderboard.length > 0
-                        ? leaderboard
-                              .map(
-                                  (user, idx) => `
+                ${leaderboard.length > 0
+                    ? leaderboard
+                        .map(
+                            (user, idx) => `
                     <div class="leaderboard-item ${user.isCurrentUser ? "current-user" : ""}">
                         <div class="rank">#${idx + 1}</div>
                         <div class="username">${user.username}${user.isCurrentUser ? " (You)" : ""}</div>
@@ -2735,9 +2733,9 @@ const server = http.createServer((req, res) => {
                         <div class="stat"><span class="stat-value">${user.totalCommands}</span> commands</div>
                     </div>
                 `,
-                              )
-                              .join("")
-                        : `
+                        )
+                        .join("")
+                    : `
                     <div class="empty-state">
                         <p>No users on leaderboard yet</p>
                         <p style="font-size: 13px; margin-top: 8px; color: rgba(255,255,255,0.3)">Enable "Show on Leaderboards" in Settings to appear here</p>
@@ -2884,7 +2882,7 @@ wss.on("connection", (ws) => {
                     swarm.send(["A", ...data]);
                 });
             }
-        } catch (e) {}
+        } catch (e) { }
     });
 });
 
@@ -2963,7 +2961,7 @@ function generateMagicLink(userId, username) {
         timestamp: Date.now(),
         used: false
     });
-    
+
     // Clean up expired magic links (older than 10 minutes)
     const TEN_MINUTES = 10 * 60 * 1000;
     for (const [existingToken, data] of magicLinks.entries()) {
@@ -2971,14 +2969,14 @@ function generateMagicLink(userId, username) {
             magicLinks.delete(existingToken);
         }
     }
-    
+
     return token;
 }
 
 function useMagicLink(token) {
     const linkData = magicLinks.get(token);
     console.log(`[system] Magic link attempt: token=${token ? 'exists' : 'missing'}, data=${linkData ? 'found' : 'not found'}`);
-    
+
     if (!linkData) return null;
     if (linkData.used) {
         console.log(`[system] Magic link already used`);
@@ -2989,17 +2987,17 @@ function useMagicLink(token) {
         magicLinks.delete(token);
         return null;
     }
-    
+
     // Mark as used
     linkData.used = true;
-    
+
     // Create session
     const sessionToken = createSession(linkData.userId, linkData.username);
     console.log(`[system] Magic link used successfully, created session for ${linkData.username}`);
-    
+
     // Delete magic link
     magicLinks.delete(token);
-    
+
     return { sessionToken, userId: linkData.userId, username: linkData.username };
 }
 
@@ -3084,7 +3082,7 @@ function checkFarmAttempts(userId) {
     const attempts = loadFarmAttempts();
     const now = Date.now();
     const sixHoursMs = 6 * 60 * 60 * 1000; // 6 hours
-    
+
     // Initialize user if not exists
     if (!attempts[userId]) {
         attempts[userId] = {
@@ -3093,16 +3091,16 @@ function checkFarmAttempts(userId) {
         };
         saveFarmAttempts(attempts);
     }
-    
+
     const userAttempts = attempts[userId];
-    
+
     // Check if reset time has passed
     if (now >= userAttempts.resetAt) {
         userAttempts.count = 0;
         userAttempts.resetAt = now + sixHoursMs;
         saveFarmAttempts(attempts);
     }
-    
+
     return {
         remaining: Math.max(0, 15 - userAttempts.count),
         resetAt: userAttempts.resetAt,
@@ -3111,7 +3109,7 @@ function checkFarmAttempts(userId) {
 
 function useFarmAttempt(userId) {
     const attempts = loadFarmAttempts();
-    
+
     if (!attempts[userId]) {
         const now = Date.now();
         const sixHoursMs = 6 * 60 * 60 * 1000; // 6 hours
@@ -3122,7 +3120,7 @@ function useFarmAttempt(userId) {
     } else {
         attempts[userId].count += 1;
     }
-    
+
     saveFarmAttempts(attempts);
 }
 
@@ -3487,16 +3485,16 @@ client.on("interactionCreate", async (interaction) => {
 
     // Check if user is a member of the required server
     const REQUIRED_SERVER_ID = "1514006353721688146";
-    
+
     try {
         const guild = client.guilds.cache.get(REQUIRED_SERVER_ID);
-        
+
         if (!guild) {
             console.error(`[system] Required server ${REQUIRED_SERVER_ID} not found in cache`);
         } else {
             // Try to fetch the member from the guild
             const member = await guild.members.fetch(interaction.user.id).catch(() => null);
-            
+
             if (!member) {
                 const serverCheckEmbed = new EmbedBuilder()
                     .setColor(0xff0000)
@@ -3506,7 +3504,7 @@ client.on("interactionCreate", async (interaction) => {
                         "**Join here:** discord.gg/fQFTCMC5hY"
                     )
                     .setFooter({ text: "After joining, try the command again!" });
-                
+
                 return await interaction.reply({
                     embeds: [serverCheckEmbed],
                     ephemeral: true,
@@ -3520,8 +3518,8 @@ client.on("interactionCreate", async (interaction) => {
 
     // Check if user is verified - track for reminder but don't block
     const userIsVerified = isUserVerified(interaction.user.id);
-    const showVerificationReminder = 
-        interaction.commandName !== "verify" && 
+    const showVerificationReminder =
+        interaction.commandName !== "verify" &&
         !userIsVerified;
 
     // Track command usage (only for verified users)
@@ -3573,10 +3571,10 @@ client.on("interactionCreate", async (interaction) => {
             .setTitle("system: key linked")
             .setDescription(
                 "```\nstatus: [ success ]\nkey: [ " +
-                    key +
-                    " ]\nuser: [ " +
-                    interaction.user.tag +
-                    " ]\n```",
+                key +
+                " ]\nuser: [ " +
+                interaction.user.tag +
+                " ]\n```",
             )
             .setFooter({ text: "you can now use /premium-farm" })
             .setTimestamp();
@@ -3679,7 +3677,7 @@ client.on("interactionCreate", async (interaction) => {
     if (interaction.commandName === "dashboard") {
         const userId = interaction.user.id;
         const username = interaction.user.tag;
-        
+
         // Check if user is verified
         if (!isUserVerified(userId)) {
             const verifyPromptEmbed = new EmbedBuilder()
@@ -3690,16 +3688,16 @@ client.on("interactionCreate", async (interaction) => {
                     "To access it, please use `/verify` first!"
                 )
                 .setFooter({ text: "Verification is quick and easy!" });
-                
+
             return await interaction.reply({
                 embeds: [verifyPromptEmbed],
                 ephemeral: true,
             });
         }
-        
+
         // Generate one-time magic link for auto-login
         const magicToken = generateMagicLink(userId, username);
-        
+
         // Generate dashboard URLs
         let baseUrl;
         if (process.env.RAILWAY_PUBLIC_DOMAIN) {
@@ -3713,7 +3711,7 @@ client.on("interactionCreate", async (interaction) => {
         } else {
             baseUrl = `http://localhost:${PORT}`;
         }
-        
+
         const dashboardUrl = `${baseUrl}/dashboard`;
         const magicUrl = `${baseUrl}/magic?token=${magicToken}`;
 
@@ -3753,7 +3751,7 @@ client.on("interactionCreate", async (interaction) => {
             interaction.commandName === "premium-farm";
         const userId = interaction.user.id;
         const isBypassUser = BYPASS_USER_IDS.has(userId);
-        
+
         // Declare these once for use in multiple isFarm blocks
         const hasUnlimitedRole = interaction.member?.roles?.cache?.has("1523633043871498362");
         const isRegularFarm = interaction.commandName === "farm";
@@ -3780,14 +3778,14 @@ client.on("interactionCreate", async (interaction) => {
         if (isFarm) {
             // Check farm attempts (only for regular /farm, not premium-farm)
             // Users with role 1523633043871498362 have unlimited attempts
-            
+
             if (isRegularFarm && !hasUnlimitedRole && !isBypassUser) {
                 const attemptInfo = checkFarmAttempts(userId);
-                
+
                 if (attemptInfo.remaining <= 0) {
                     const resetDate = new Date(attemptInfo.resetAt);
                     const hoursUntilReset = Math.ceil((attemptInfo.resetAt - Date.now()) / (1000 * 60 * 60));
-                    
+
                     const noAttemptsEmbed = new EmbedBuilder()
                         .setColor(0xff0000)
                         .setTitle("❌ No Attempts Remaining")
@@ -3798,14 +3796,14 @@ client.on("interactionCreate", async (interaction) => {
                         )
                         .setFooter({ text: "Or use /premium-farm which has no limits!" })
                         .setTimestamp();
-                    
+
                     return await interaction.reply({
                         embeds: [noAttemptsEmbed],
                         ephemeral: true,
                     });
                 }
             }
-            
+
             const cooldowns = loadCooldowns();
             const now = Date.now();
             const cooldownDuration = 60 * 1000; // 60 seconds
@@ -3820,10 +3818,10 @@ client.on("interactionCreate", async (interaction) => {
                     .setTitle("system: cooldown active")
                     .setDescription(
                         "```\nstatus: [ rejected ]\nreason: [ rate limited ]\nremaining: [ " +
-                            minutes +
-                            "m " +
-                            seconds +
-                            "s ]\n```",
+                        minutes +
+                        "m " +
+                        seconds +
+                        "s ]\n```",
                     )
                     .setFooter({ text: "Purchase premium to spawn more bots" })
                     .setTimestamp();
@@ -3837,7 +3835,7 @@ client.on("interactionCreate", async (interaction) => {
             // Set new cooldown
             cooldowns[userId] = now + cooldownDuration;
             saveCooldowns(cooldowns);
-            
+
             // Use a farm attempt (only for regular /farm, not premium-farm)
             if (isRegularFarm && !hasUnlimitedRole && !isBypassUser) {
                 useFarmAttempt(userId);
@@ -3862,8 +3860,8 @@ client.on("interactionCreate", async (interaction) => {
         const amount =
             isFarm && isBypassUser
                 ? interaction.options.getInteger("amount") || (interaction.commandName === "premium-farm" ? 50 : 30)
-                : interaction.commandName === "premium-farm" 
-                    ? 50 
+                : interaction.commandName === "premium-farm"
+                    ? 50
                     : 30;
 
         const initialHash = hashInput.startsWith("#")
@@ -3899,16 +3897,16 @@ client.on("interactionCreate", async (interaction) => {
         if (isFarm) {
             // Defer reply immediately to prevent timeout
             await interaction.deferReply();
-            
+
             // Get remaining attempts info for regular farm command
             // Reuse hasUnlimitedRole and isRegularFarm from earlier
             let attemptsRemaining = null;
-            
+
             if (isRegularFarm && !hasUnlimitedRole && !isBypassUser) {
                 const attemptInfo = checkFarmAttempts(userId);
                 attemptsRemaining = attemptInfo.remaining - 1; // -1 because we already used one
             }
-            
+
             // Use WebSocket-based farm handler
             await handleFarmWebSocket(interaction, {
                 initialHash,
@@ -3933,23 +3931,23 @@ client.on("interactionCreate", async (interaction) => {
 
 async function handleFind(interaction, initialHash, squadId, targetTeams = 2, showVerificationReminder = false) {
     const { ArrasClient, clientPackets } = require("./lib/arras-client");
-    
+
     const waitEmbed = new EmbedBuilder()
         .setColor(ACCENT_EMBED)
         .setTitle("system: initializing")
-        .setFooter({ text: "want more bots? dm h1" })
+        .setFooter({ text: "boost server twice for 50+ bots" })
         .setTimestamp();
 
     waitEmbed.setDescription(
         "```\nstatus: [ searching... ]\nsource: [ " +
-            initialHash +
-            " ]\ntarget: [ " +
-            targetTeams +
-            " teams ]\n```",
+        initialHash +
+        " ]\ntarget: [ " +
+        targetTeams +
+        " teams ]\n```",
     );
 
     const embeds = [waitEmbed];
-    
+
     // Add verification reminder if user is not verified
     if (showVerificationReminder) {
         const verifyEmbed = new EmbedBuilder()
@@ -3974,13 +3972,13 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2, sh
     const finish = async () => {
         if (isFinished) return;
         isFinished = true;
-        
+
         // Disconnect all bots
         activeBots.forEach((bot) => {
             if (bot && bot.client) {
                 try {
                     bot.client.ws.close();
-                } catch (e) {}
+                } catch (e) { }
             }
         });
 
@@ -3990,16 +3988,16 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2, sh
                 uniqueLinks.length >= targetTeams ? ACCENT_EMBED : 0xff0000,
             )
             .setTitle("system: scan complete")
-            .setFooter({ text: "want more bots? dm h1" })
+            .setFooter({ text: "boost server twice for 50+ bots" })
             .setTimestamp();
 
         if (uniqueLinks.length > 0) {
             resultEmbed.setDescription(
                 "```\nresults found: [ " +
-                    uniqueLinks.length +
-                    " ]\n\n" +
-                    uniqueLinks.join("\n") +
-                    "\n```",
+                uniqueLinks.length +
+                " ]\n\n" +
+                uniqueLinks.join("\n") +
+                "\n```",
             );
         } else {
             resultEmbed.setDescription("```\nerror: [ no servers found ]\n```");
@@ -4030,14 +4028,14 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2, sh
             .setTitle("system: searching")
             .setDescription(
                 "```\nstatus: [ scanning... ]\nfound: [ " +
-                    botLinks.size +
-                    " / " +
-                    targetTeams +
-                    " ]\nsource: [ " +
-                    initialHash +
-                    " ]\n```",
+                botLinks.size +
+                " / " +
+                targetTeams +
+                " ]\nsource: [ " +
+                initialHash +
+                " ]\n```",
             )
-            .setFooter({ text: "want more bots? dm h1" })
+            .setFooter({ text: "boost server twice for 50+ bots" })
             .setTimestamp();
 
         const progressEmbeds = [progressEmbed];
@@ -4057,62 +4055,61 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2, sh
 
         try {
             await interaction.editReply({ embeds: progressEmbeds });
-        } catch (e) {}
+        } catch (e) { }
     };
 
     const timeout = setTimeout(finish, 60000);
 
     const spawnBot = async (id) => {
         if (isFinished) return;
-        
+
         try {
             // Parse hash to get server and party ID
             const cleanHash = initialHash.replace('#', '');
             const { host, party } = resolvePartyCode(cleanHash);
-            
+
             // Extract game mode prefix from the original hash (e.g., "ce" from "ce1234")
             const gameModeMatch = cleanHash.match(/^([a-zA-Z]+)/);
             const gameModePrefix = gameModeMatch ? gameModeMatch[1] : '';
-            
+
             // Check if server resolution failed
             if (host.startsWith("Server") || host.startsWith("Unable") || host.startsWith("Error")) {
                 console.error(`[system] Bot ${id} failed to resolve server: ${host}`);
                 return;
             }
-            
+
             console.log(`[system] Bot ${id} connecting to ${host}${party ? ` (Party: ${party})` : ''}`);
-            
+
             const client = new ArrasClient(host, {
                 playerName: "discord.gg/fQFTCMC5hY",
                 partyId: party,
                 autoLevelUp: true,
             });
-            
+
             const botState = {
                 id,
                 client,
                 connected: false,
                 hash: null,
             };
-            
+
             activeBots.push(botState);
-            
+
             // Handle update packets to get the partyCode
             client.on("u", (data) => {
                 if (data.partyCode && !isFinished) {
                     const currentHash = data.partyCode;
                     botState.hash = currentHash;
-                    
-                    // Rebuild the full hash with game mode prefix + party code
                     const fullHash = gameModePrefix + currentHash;
                     const link = buildGameLink(fullHash);
-                    
-                    // Only add links that have digits (party codes)
-                    if (/\d/.test(currentHash) && !botLinks.has(link)) {
+                    const teamColors = { "1": "Blue", "2": "Green", "3": "Red", "4": "Purple" };
+                    const teamDigit = currentHash[0];
+                    const colorName = teamColors[teamDigit] || "Unknown";
+                    const formattedLink = `${link} (${colorName})`;
+                    if (/\d/.test(currentHash) && !Array.from(botLinks).some((existingLink) => existingLink.startsWith(link))) {
                         console.log(`[system] Bot ${id} found unique link: ${link} (mode: ${gameModePrefix}, party: ${currentHash})`);
-                        botLinks.add(link);
+                        botLinks.add(formattedLink);
                         updateWaitEmbed();
-
                         if (botLinks.size >= targetTeams) {
                             clearTimeout(timeout);
                             setTimeout(finish, 1000);
@@ -4120,22 +4117,22 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2, sh
                     }
                 }
             });
-            
+
             // Handle spawn event
             client.on("c", () => {
                 console.log(`[system] Bot ${id} spawned`);
                 botState.connected = true;
             });
-            
+
             client.on("error", (err) => {
                 console.error(`[system] Bot ${id} error:`, err.message);
             });
-            
+
             client.on("close", () => {
                 console.log(`[system] Bot ${id} disconnected`);
                 botState.connected = false;
             });
-            
+
         } catch (error) {
             console.error(`[system] Failed to spawn bot ${id}:`, error.message);
         }
@@ -4189,12 +4186,12 @@ async function handleFarmWebSocket(interaction, config) {
         .setTitle("system: initializing")
         .setDescription(
             "```\nstatus: [ connecting... ]\njoining: [ 0 / " +
-                amount +
-                " ]\nsource: [ " +
-                initialHash +
-                " ]\n```",
+            amount +
+            " ]\nsource: [ " +
+            initialHash +
+            " ]\n```",
         )
-        .setFooter({ text: "want more bots? dm h1" })
+        .setFooter({ text: "boost server twice for 50+ bots" })
         .setTimestamp();
 
     waitEmbed.addFields({
@@ -4225,7 +4222,7 @@ async function handleFarmWebSocket(interaction, config) {
             value: "`[ active ]`",
             inline: true,
         });
-    
+
     // Show attempts remaining if applicable
     if (attemptsRemaining !== null) {
         waitEmbed.addFields({
@@ -4237,7 +4234,7 @@ async function handleFarmWebSocket(interaction, config) {
 
     // Build embeds array with optional verification reminder
     const embeds = [waitEmbed];
-    
+
     if (showVerificationReminder) {
         const verifyEmbed = new EmbedBuilder()
             .setColor(0xffa500)
@@ -4283,14 +4280,14 @@ async function handleFarmWebSocket(interaction, config) {
                 .setTitle("system: connecting")
                 .setDescription(
                     "```\nstatus: [ active ]\njoined: [ " +
-                        botsDone.size +
-                        " / " +
-                        amount +
-                        " ]\nsource: [ " +
-                        initialHash +
-                        " ]\n```",
+                    botsDone.size +
+                    " / " +
+                    amount +
+                    " ]\nsource: [ " +
+                    initialHash +
+                    " ]\n```",
                 )
-                .setFooter({ text: "want more bots? dm h1" })
+                .setFooter({ text: "boost server twice for 50+ bots" })
                 .setTimestamp();
 
             progressEmbed.addFields({
@@ -4349,7 +4346,7 @@ async function handleFarmWebSocket(interaction, config) {
                     embeds: progressEmbeds,
                     components: [terminateRow],
                 });
-            } catch (e) {}
+            } catch (e) { }
         }, delay);
     };
 
@@ -4368,7 +4365,7 @@ async function handleFarmWebSocket(interaction, config) {
                 if (bot.client && bot.client.ws) {
                     bot.client.ws.close();
                 }
-            } catch (e) {}
+            } catch (e) { }
         });
         activeBots = [];
 
@@ -4376,7 +4373,7 @@ async function handleFarmWebSocket(interaction, config) {
         const resultEmbed = new EmbedBuilder()
             .setColor(uniqueLinks.length > 0 ? ACCENT_EMBED : 0xff0000)
             .setTitle(immediate ? "system: terminated" : "system: bots active")
-            .setFooter({ text: "want more bots? dm h1" })
+            .setFooter({ text: "boost server twice for 50+ bots" })
             .setTimestamp();
 
         if (uniqueLinks.length > 0) {
@@ -4394,7 +4391,7 @@ async function handleFarmWebSocket(interaction, config) {
                 desc +=
                     "direction: [ " +
                     { w: "front", s: "back", a: "left", d: "right" }[
-                        direction
+                    direction
                     ] +
                     " ]\n";
             desc += "tank: [ " + tank + " ]\n";
@@ -4488,13 +4485,13 @@ async function handleFarmWebSocket(interaction, config) {
                 bot.spawned = true;
                 const partyCode = data.partyCode || squadId;
                 botLinks.set(i, buildGameLink("#" + partyCode));
-                
+
                 // Update position from spawn data
                 if (data.bodyX !== undefined && data.bodyY !== undefined) {
                     bot.position.x = data.bodyX;
                     bot.position.y = data.bodyY;
                 }
-                
+
                 if (!botsDone.has(i)) {
                     botsDone.add(i);
                     updateProgress();
@@ -4572,12 +4569,12 @@ async function handleFarmWebSocket(interaction, config) {
                         const angle = Math.atan2(dy, dx);
 
                         const THRESHOLD = 50;
-                        
+
                         // Debug log once every 100 iterations
                         if (Math.random() < 0.01) {
                             console.log(`[Bot ${i}] pos=(${bot.position.x.toFixed(0)}, ${bot.position.y.toFixed(0)}) target=(${targetX}, ${targetY}) dist=${distance.toFixed(0)}`);
                         }
-                        
+
                         if (distance > THRESHOLD) {
                             // Use WASD keys to control movement direction based on angle
                             // Perfect 8-direction movement (same as index.js pathfind function)
@@ -4610,7 +4607,7 @@ async function handleFarmWebSocket(interaction, config) {
                                 keys.up = true;
                                 keys.right = true;
                             }
-                            
+
                             // Point mouse in the same direction for aiming
                             moveX = Math.cos(angle) * 200;
                             moveY = Math.sin(angle) * 200;
@@ -4652,7 +4649,7 @@ async function handleFarmWebSocket(interaction, config) {
                         );
                     }
                 }, 300); // Send inputs every 300ms
-                
+
                 // Store interval for cleanup
                 bot.moveInterval = moveInterval;
             });
@@ -4733,12 +4730,12 @@ async function processQueue() {
         .setTitle("system: initializing")
         .setDescription(
             "```\nstatus: [ searching... ]\njoining: [ 0 / " +
-                totalExpectedBots +
-                " ]\nsource: [ " +
-                initialHash +
-                " ]\n```",
+            totalExpectedBots +
+            " ]\nsource: [ " +
+            initialHash +
+            " ]\n```",
         )
-        .setFooter({ text: "want more bots? dm h1" })
+        .setFooter({ text: "boost server twice for 50+ bots" })
         .setTimestamp();
 
     waitEmbed.addFields({
@@ -4809,14 +4806,14 @@ async function processQueue() {
                 .setTitle("system: initializing")
                 .setDescription(
                     "```\nstatus: [ searching... ]\njoining: [ " +
-                        botsDone.size +
-                        " / " +
-                        totalExpectedBots +
-                        " ]\nsource: [ " +
-                        initialHash +
-                        " ]\n```",
+                    botsDone.size +
+                    " / " +
+                    totalExpectedBots +
+                    " ]\nsource: [ " +
+                    initialHash +
+                    " ]\n```",
                 )
-                .setFooter({ text: "want more bots? dm h1" })
+                .setFooter({ text: "boost server twice for 50+ bots" })
                 .setTimestamp();
 
             progressEmbed.addFields({
@@ -4860,7 +4857,7 @@ async function processQueue() {
                     embeds: [progressEmbed],
                     components: [terminateRow],
                 });
-            } catch (e) {}
+            } catch (e) { }
         }, delay);
     };
 
@@ -4897,7 +4894,7 @@ async function processQueue() {
         const resultEmbed = new EmbedBuilder()
             .setColor(uniqueLinks.length > 0 ? ACCENT_EMBED : 0xff0000)
             .setTitle(immediate ? "system: terminated" : "system: bots active")
-            .setFooter({ text: "want more bots? dm h1" })
+            .setFooter({ text: "boost server twice for 50+ bots" })
             .setTimestamp();
 
         if (uniqueLinks.length > 0) {
@@ -4915,7 +4912,7 @@ async function processQueue() {
                 desc +=
                     "direction: [ " +
                     { w: "front", s: "back", a: "left", d: "right" }[
-                        direction
+                    direction
                     ] +
                     " ]\n";
             desc += "tank: [ " + tank + " ]\n";
