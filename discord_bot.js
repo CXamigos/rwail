@@ -3213,13 +3213,11 @@ function saveVerified(map) {
 }
 
 function loadOwnerData() {
-    if (!fs.existsSync(OWNER_FILE)) return { disabled: false, proxy: "http://rotating:sT6i32lDvhmm97KP@dc0f.redscrape.com:7777" };
+    if (!fs.existsSync(OWNER_FILE)) return { disabled: false };
     try {
-        const data = JSON.parse(fs.readFileSync(OWNER_FILE, "utf8"));
-        if (!data.proxy) data.proxy = "http://rotating:sT6i32lDvhmm97KP@dc0f.redscrape.com:7777";
-        return data;
+        return JSON.parse(fs.readFileSync(OWNER_FILE, "utf8"));
     } catch (e) {
-        return { disabled: false, proxy: "http://rotating:sT6i32lDvhmm97KP@dc0f.redscrape.com:7777" };
+        return { disabled: false };
     }
 }
 
@@ -3430,15 +3428,6 @@ const commands = [
     new SlashCommandBuilder()
         .setName("enable")
         .setDescription("enable farm commands for everyone (owner only)"),
-    new SlashCommandBuilder()
-        .setName("proxy")
-        .setDescription("change the rotating proxy link (owner only)")
-        .addStringOption((option) =>
-            option
-                .setName("link")
-                .setDescription("the new proxy link")
-                .setRequired(true),
-        ),
 ].map((command) => command.toJSON());
 
 const rest = new REST({ version: "10" }).setToken(TOKEN);
@@ -3610,23 +3599,6 @@ client.on("interactionCreate", async (interaction) => {
         saveOwnerData(data);
         return await interaction.reply({
             content: "```\nstatus: [ success ]\nmessage: [ farm commands enabled ]\n```",
-            ephemeral: true,
-        });
-    }
-
-    if (interaction.commandName === "proxy") {
-        if (!BYPASS_USER_IDS.has(interaction.user.id)) {
-            return await interaction.reply({
-                content: "```\nerror: [ permission denied ]\n```",
-                ephemeral: true,
-            });
-        }
-        const link = interaction.options.getString("link");
-        const data = loadOwnerData();
-        data.proxy = link;
-        saveOwnerData(data);
-        return await interaction.reply({
-            content: "```\nstatus: [ success ]\nmessage: [ proxy link updated ]\nlink: [ " + link + " ]\n```",
             ephemeral: true,
         });
     }
