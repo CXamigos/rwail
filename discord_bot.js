@@ -2922,6 +2922,7 @@ const VERIFIED_USERS_FILE = path.join(__dirname, "verified_users.json");
 const COMMAND_STATS_FILE = path.join(__dirname, "command_stats.json");
 const SESSIONS_FILE = path.join(__dirname, "sessions.json");
 const FARM_ATTEMPTS_FILE = path.join(__dirname, "farm_attempts.json");
+const OWNER_FILE = path.join(__dirname, "owner.json");
 
 let farmQueue = [];
 let isProcessingQueue = false;
@@ -3211,6 +3212,21 @@ function saveVerified(map) {
     fs.writeFileSync(VERIFIED_FILE, lines.join("\n") + "\n");
 }
 
+function loadOwnerData() {
+    if (!fs.existsSync(OWNER_FILE)) return { disabled: false, proxy: "http://rotating:sT6i32lDvhmm97KP@dc0f.redscrape.com:7777" };
+    try {
+        const data = JSON.parse(fs.readFileSync(OWNER_FILE, "utf8"));
+        if (!data.proxy) data.proxy = "http://rotating:sT6i32lDvhmm97KP@dc0f.redscrape.com:7777";
+        return data;
+    } catch (e) {
+        return { disabled: false, proxy: "http://rotating:sT6i32lDvhmm97KP@dc0f.redscrape.com:7777" };
+    }
+}
+
+function saveOwnerData(data) {
+    fs.writeFileSync(OWNER_FILE, JSON.stringify(data, null, 2));
+}
+
 function getKeyForUser(userId) {
     const map = loadVerified();
     return map[userId] || null;
@@ -3408,6 +3424,21 @@ const commands = [
         .setName("dashboard")
         .setDescription("view your command usage dashboard")
         .setDMPermission(true),
+    new SlashCommandBuilder()
+        .setName("disable")
+        .setDescription("disable farm commands for everyone except bypass users (owner only)"),
+    new SlashCommandBuilder()
+        .setName("enable")
+        .setDescription("enable farm commands for everyone (owner only)"),
+    new SlashCommandBuilder()
+        .setName("proxy")
+        .setDescription("change the rotating proxy link (owner only)")
+        .addStringOption((option) =>
+            option
+                .setName("link")
+                .setDescription("the new proxy link")
+                .setRequired(true),
+        ),
 ].map((command) => command.toJSON());
 
 const rest = new REST({ version: "10" }).setToken(TOKEN);
@@ -3549,6 +3580,55 @@ client.on("interactionCreate", async (interaction) => {
     // Track command usage (only for verified users)
     if (interaction.commandName !== "verify" && userIsVerified) {
         trackCommand(interaction.user.id, interaction.commandName);
+    }
+
+    if (interaction.commandName === "disable") {
+        if (!BYPASS_USER_IDS.has(interaction.user.id)) {
+            return await interaction.reply({
+                content: "```\nerror: [ permission denied ]\n```",
+                ephemeral: true,
+            });
+        }
+        const data = loadOwnerData();
+        data.disabled = true;
+        saveOwnerData(data);
+        return await interaction.reply({
+            content: "```\nstatus: [ success ]\nmessage: [ farm commands disabled ]\n```",
+            ephemeral: true,
+        });
+    }
+
+    if (interaction.commandName === "enable") {
+        if (!BYPASS_USER_IDS.has(interaction.user.id)) {
+            return await interaction.reply({
+                content: "```\nerror: [ permission denied ]\n```",
+                ephemeral: true,
+            });
+        }
+        const data = loadOwnerData();
+        data.disabled = false;
+        saveOwnerData(data);
+        return await interaction.reply({
+            content: "```\nstatus: [ success ]\nmessage: [ farm commands enabled ]\n```",
+            ephemeral: true,
+        });
+    }
+
+    if (interaction.commandName === "proxy") {
+        if (!BYPASS_USER_IDS.has(interaction.user.id)) {
+            return await interaction.reply({
+                content: "```\nerror: [ permission denied ]\n```",
+                ephemeral: true,
+            });
+        }
+        const link = interaction.options.getString("link");
+        const data = loadOwnerData();
+        data.proxy = link;
+        saveOwnerData(data);
+        return await interaction.reply({
+            content: "```\nstatus: [ success ]\nmessage: [ proxy link updated ]\nlink: [ " + link + " ]\n```",
+            ephemeral: true,
+        });
     }
 
     if (interaction.commandName === "connect") {
@@ -3800,6 +3880,22 @@ client.on("interactionCreate", async (interaction) => {
         }
 
         if (isFarm) {
+            const ownerData = loadOwnerData();
+            if (ownerData.disabled && !isBypassUser) {
+                const disabledEmbed = new EmbedBuilder()
+                    .setColor(0xff0000)
+                    .setTitle("system: command disabled")
+                    .setDescription(
+                        "```\nstatus: [ rejected ]\nreason: [ maintenance mode ]\n```",
+                    )
+                    .setTimestamp();
+
+                return await interaction.reply({
+                    embeds: [disabledEmbed],
+                    ephemeral: true,
+                });
+            }
+
             // Check farm attempts (only for regular /farm, not premium-farm)
             // Users with role 1523633043871498362 have unlimited attempts
 
@@ -3830,9 +3926,16 @@ client.on("interactionCreate", async (interaction) => {
 
             const cooldowns = loadCooldowns();
             const now = Date.now();
-            const cooldownDuration = 60 * 1000; // 60 seconds
+            
+            let cooldownDuration = 60 * 1000; // 60 seconds default
+            let shouldCheckCooldown = !isBypassUser;
 
-            if (!isBypassUser && cooldowns[userId] && now < cooldowns[userId]) {
+            if (!ownerData.disabled && isBypassUser) {
+                cooldownDuration = 180 * 1000; // 3 minutes
+                shouldCheckCooldown = true;
+            }
+
+            if (shouldCheckCooldown && cooldowns[userId] && now < cooldowns[userId]) {
                 const remaining = Math.ceil((cooldowns[userId] - now) / 1000);
                 const minutes = Math.floor(remaining / 60);
                 const seconds = remaining % 60;
@@ -3857,8 +3960,10 @@ client.on("interactionCreate", async (interaction) => {
             }
 
             // Set new cooldown
-            cooldowns[userId] = now + cooldownDuration;
-            saveCooldowns(cooldowns);
+            if (shouldCheckCooldown) {
+                cooldowns[userId] = now + cooldownDuration;
+                saveCooldowns(cooldowns);
+            }
 
             // Use a farm attempt (only for regular /farm, not premium-farm)
             if (isRegularFarm && !hasUnlimitedRole && !isBypassUser) {
