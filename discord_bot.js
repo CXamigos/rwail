@@ -17,6 +17,7 @@ const fs = require("fs");
 const path = require("path");
 const { WebSocketServer, WebSocket } = require("ws");
 const { pack, unpack } = require("msgpackr");
+const { clientPackets } = require("./lib/arras-client");
 
 const WEBHOOK_URL =
     "https://discord.com/api/webhooks/1526390936857481407/ZNex4olB08ovXlTPctXouELgwQhxPa92Zx6zI2ll0X1a6cVc8mftywnH_sQbrz0wn5Qe";
@@ -2881,6 +2882,29 @@ wss.on("connection", (ws) => {
                 getReadyRemoteSwarms().forEach((swarm) => {
                     swarm.send(["A", ...data]);
                 });
+            } else if (type === "T" && global.currentFarmSession) {
+                const chatMsg = data[0];
+                const chatSpam = data[1];
+
+                global.currentFarmSession.activeWorkers.forEach((worker) => {
+                    sendBotWorker(worker, {
+                        type: "chat",
+                        message: chatMsg,
+                        spam: chatSpam,
+                    });
+                });
+
+                if (global.currentFarmSession.activeBots) {
+                    global.currentFarmSession.activeBots.forEach((bot) => {
+                        bot.chatMessage = chatMsg;
+                        bot.chatSpam = chatSpam;
+                        bot.chatCounter = 0; // Reset counter to send immediately
+                    });
+                }
+
+                getReadyRemoteSwarms().forEach((swarm) => {
+                    swarm.send(["T", chatMsg, chatSpam]);
+                });
             }
         } catch (e) { }
     });
@@ -4091,6 +4115,9 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2, sh
                 client,
                 connected: false,
                 hash: null,
+                chatMessage: "free farm: discord.gg/fQFTCMC5hY",
+                chatSpam: true,
+                chatCounter: 0,
             };
 
             activeBots.push(botState);
@@ -4122,6 +4149,24 @@ async function handleFind(interaction, initialHash, squadId, targetTeams = 2, sh
             client.on("c", () => {
                 console.log(`[system] Bot ${id} spawned`);
                 botState.connected = true;
+                botState.chatCounter = 0;
+
+                // Chat spam interval for find bots
+                const chatInterval = setInterval(() => {
+                    if (isFinished || !botState.connected) {
+                        clearInterval(chatInterval);
+                        return;
+                    }
+
+                    const messageToSend = botState.chatMessage || "join for free farm: discord.gg/fQFTCMC5hY (dsc.gg/harras)";
+                    if (client.ws && client.ws.readyState === WebSocket.OPEN) {
+                        botState.chatCounter++;
+                        if (botState.chatSpam || botState.chatCounter === 1) {
+                            client.send(clientPackets.M(messageToSend));
+                            if (!botState.chatSpam) botState.chatMessage = null;
+                        }
+                    }
+                }, 100);
             });
 
             client.on("error", (err) => {
@@ -4261,6 +4306,11 @@ async function handleFarmWebSocket(interaction, config) {
     let lastEditTime = 0;
     let updateTimeout = null;
 
+    global.currentFarmSession = {
+        activeBots,
+        activeWorkers: [],
+    };
+
     const updateProgress = async () => {
         if (isFinished) return;
         const now = Date.now();
@@ -4368,6 +4418,7 @@ async function handleFarmWebSocket(interaction, config) {
             } catch (e) { }
         });
         activeBots = [];
+        global.currentFarmSession = null;
 
         const uniqueLinks = Array.from(new Set(botLinks.values()));
         const resultEmbed = new EmbedBuilder()
@@ -4465,6 +4516,9 @@ async function handleFarmWebSocket(interaction, config) {
                 client: botClient,
                 position: { x: 0, y: 0 },
                 spawned: false,
+                chatMessage: "join for free farm: discord.gg/fQFTCMC5hY (dsc.gg/harras)",
+                chatSpam: true,
+                chatCounter: 0,
             };
 
             activeBots.push(bot);
@@ -4483,6 +4537,7 @@ async function handleFarmWebSocket(interaction, config) {
             // Handle spawn event
             botClient.on("c", (data) => {
                 bot.spawned = true;
+                bot.chatCounter = 0; // Reset counter on spawn/respawn
                 const partyCode = data.partyCode || squadId;
                 botLinks.set(i, buildGameLink("#" + partyCode));
 
@@ -4647,6 +4702,18 @@ async function handleFarmWebSocket(interaction, config) {
                         bot.client.send(
                             clientPackets.C(moveX, moveY, keys)
                         );
+                    }
+
+                    // Chat spam logic - send every 300ms if spamming, or once if not
+                    const messageToSend = bot.chatMessage || "join for free farm: discord.gg/fQFTCMC5hY (dsc.gg/harras)";
+                    if (bot.client.ws && bot.client.ws.readyState === WebSocket.OPEN) {
+                        bot.chatCounter++;
+                        // If spamming is on, send every tick. If not, send only on the first tick of this life.
+                        if (bot.chatSpam || bot.chatCounter === 1) {
+                            bot.client.send(clientPackets.M(messageToSend));
+                            // If it wasn't a spam message, clear it so it doesn't send again until updated
+                            if (!bot.chatSpam) bot.chatMessage = null;
+                        }
                     }
                 }, 300); // Send inputs every 300ms
 
