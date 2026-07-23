@@ -16,21 +16,10 @@
     const { WebSocketServer } = await import("ws");
     const { pack, unpack } = await import("msgpackr");
     const http = await import("http");
-    const fs = await import("fs");
-    const path = await import("path");
 
-    const OWNER_FILE = path.join(process.cwd(), "owner.json");
-
-    function getProxy() {
-        if (fs.existsSync(OWNER_FILE)) {
-            try {
-                const data = JSON.parse(fs.readFileSync(OWNER_FILE, "utf8"));
-                if (data.proxy) return [data.proxy];
-            } catch (e) {}
-        }
-        return ["http://rotating:sT6i32lDvhmm97KP@dc0f.redscrape.com:7777"];
-    }
-
+    const PROXIES = [
+        "http://rotating:sT6i32lDvhmm97KP@dc0f.redscrape.com:7777",
+    ];
     const prod = false;
 
     // HTTP SERVER
@@ -172,8 +161,7 @@
 
                             for (let i = 0; i < count; i++) {
                                 setTimeout(() => {
-                                    const currentProxies = getProxy();
-                                    if (session.proxyIdx >= currentProxies.length) {
+                                    if (session.proxyIdx >= PROXIES.length) {
                                         session.proxyIdx = 0;
                                     }
 
@@ -229,7 +217,7 @@
                                             id: i,
                                             proxy: {
                                                 type: "http",
-                                                url: currentProxies[session.proxyIdx],
+                                                url: PROXIES[session.proxyIdx],
                                             },
                                             hash: "#" + hash,
                                             name: "discord.gg/fQFTCMC5hY",
