@@ -1,0 +1,37 @@
+{
+    mode: ar,
+    tank: Browser,
+    stats: 1/1/2/8/6/8/9/7,
+    growth_extended_upgrades_order_to_max: [2, 7, 1, 0, 8, 9],
+    autospin: false,
+    autofire: false,
+    pathfinding_facing_angle_offset: 0
+},
+{
+    mode: ar,
+    tank: Strider,
+    stats: 1/1/2/8/6/8/9/7,
+    growth_extended_upgrades_order_to_max: [2, 7, 1, 0, 8, 9],
+    autospin: false,
+    autofire: false,
+    pathfinding_facing_angle_offset: 0
+},
+{
+    mode: ar,
+    tank: Jerker,
+    stats: 1/1/8/6/8/9/9,
+    growth_extended_upgrades_order_to_max: [2, 7, 1, 0, 8, 9],
+    autospin: false,
+    autofire: false,
+    pathfinding_facing_angle_offset: 0
+},
+{
+    mode: ar,
+    tank: Triple Auto-Tri-Angle,
+    stats: 1/1/2/8/6/8/9/7,
+    growth_extended_upgrades_order_to_max: [2, 7, 1, 0, 8, 9],
+    autospin: false,
+    autofire: false,
+    pathfinding_facing_angle_offset: 0
+},
+

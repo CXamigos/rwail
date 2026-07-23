@@ -1,0 +1,45 @@
+{
+    mode: normal,
+    tank: Bent Double,
+    stats: 1/1/4/8/6/8/8/6,
+    growth_extended_upgrades_order_to_max: [2, 7, 1, 0, 8, 9],
+    autospin: false,
+    autofire: false,
+    pathfinding_facing_angle_offset: 0
+},
+{
+    mode: normal,
+    tank: Sidewinder,
+    stats: 1/1/4/8/6/8/8/6,
+    growth_extended_upgrades_order_to_max: [2, 7, 1, 0, 8, 9],
+    autospin: false,
+    autofire: false,
+    pathfinding_facing_angle_offset: Math.PI
+},
+{
+    mode: normal,
+    tanks: [0, 0, 2],
+    stats: 1/1/4/8/6/8/8/6,
+    growth_extended_upgrades_order_to_max: [2, 7, 1, 0, 8, 9],
+    autospin: false,
+    autofire: false,
+    pathfinding_facing_angle_offset: 0
+},
+{
+    mode: normal,
+    tanks: [5, 0, 1],
+    stats: 1/1/6/7/6/8/5/8,
+    growth_extended_upgrades_order_to_max: [2, 7, 1, 0, 8, 9],
+    autospin: false,
+    autofire: false,
+    pathfinding_facing_angle_offset: 0
+},
+{
+    mode: normal,
+    tank: Auto-4,
+    stats: 1/1/4/8/6/8/8/6,
+    growth_extended_upgrades_order_to_max: [2, 7, 1, 0, 8, 9],
+    autospin: false,
+    autofire: false,
+    pathfinding_facing_angle_offset: 0
+},

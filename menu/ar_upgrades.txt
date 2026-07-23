@@ -1,0 +1,1183 @@
+0 Twin
+1 Sniper
+2 Machine Gun
+3 Flank Guard
+4 Director
+5 Pounder
+6 Trapper
+8 Single
+0,0 Double Twin
+0,1 Triple Shot
+0,3 Hexa Tank
+0,4 Wark
+0,5 Dual
+0,6 Bulwark
+0,7 Musket
+1,0 Assassin
+1,1 Hunter
+1,3 Rifle
+1,4 Bushwhacker
+1,5 Railgun
+2,1 Minigun
+2,2 Gunner
+2,3 Diesel
+2,4 Machine Trapper
+2,5 Sprayer
+2,6 Gadget Gun
+3,1 Tri-Angle
+3,2 Auto-3
+3,3 Trap Guard
+3,4 Tri-Trapper
+3,5 Triple Twin
+4,0 Overseer
+4,1 Cruiser
+4,2 Underseer
+4,3 Spawner
+4,4 Directordrive
+4,5 Honcho
+4,6 Doper
+4,7 Manager
+5,0 Destroyer
+5,1 Builder
+5,2 Artillery
+5,3 Launcher
+5,4 Shotgun
+5,5 Eagle
+5,6 Subverter
+5,7 Bruiser
+6,3 Pen
+6,4 Mech
+6,7 Barricade
+6,8 Overtrapper
+6,9 Mega Trapper
+6,10 Sawed Off
+8,0 Duo
+8,1 Sharpshooter
+8,3 Ternion
+8,4 Coordinator
+8,6 Tricker
+8,7 Mono
+8,8 Avian
+8,9 Custodian
+8,10 Assistant
+8,11 Auto-Single
+0,0,1 Hewn Double
+0,0,2 Auto-Double
+0,0,3 Bent Double
+0,0,4 Double Flank Twin
+0,0,6 Warkwark
+0,0,8 Double Musket
+0,0,9 Overdouble Twin
+0,1,0 Penta Shot
+0,1,1 Spreadshot
+0,1,2 Bent Hybrid
+0,1,4 Triplet
+0,1,5 Split Shot
+0,1,6 Auto-Triple Shot
+0,1,10 Waarrk
+0,1,11 Threefold
+0,1,12 Flintlock
+0,1,13 Bent Bulwark
+0,3,0 Octo Tank
+0,3,2 Hexa-Trapper
+0,3,3 Death Star
+0,3,4 Auto-Hexa Tank
+0,3,5 Mingler
+0,3,7 Triple Flank Twin
+0,4,8 Coalesce
+0,4,9 Auto-Wark
+0,5,2 Ravisher
+0,5,3 Vulture
+0,5,4 Nimrod
+0,5,5 Auto-Dual
+0,5,6 Bifold
+0,5,7 Dyadic
+0,6,0 Parapet
+0,6,1 Partition
+0,6,4 Striker
+0,6,6 Auto-Bulwark
+0,6,7 Stockade
+0,6,8 Fencer
+0,6,9 Impeder
+0,6,10 Quadwark
+0,7,2 Arbalest
+0,7,3 Matchlock
+0,7,4 Auto-Musket
+0,7,5 Duelist
+1,0,0 Ranger
+1,0,2 Stalker
+1,0,3 Auto-Assassin
+1,0,5 Hitman
+1,0,6 Sniper-3
+1,0,7 Enforcer
+1,0,8 Courser
+1,0,9 Executor
+1,1,0 Predator
+1,1,1 Poacher
+1,1,4 Auto-Hunter
+1,1,5 Mega Hunter
+1,1,6 Prober
+1,1,8 Butcher
+1,1,9 Reverberator
+1,3,1 Crossbow
+1,3,2 Armsman
+1,3,3 Auto-Rifle
+1,3,6 Ransacker
+1,3,7 Thunderclap
+1,4,1 Anchor
+1,4,5 Raider
+1,4,6 Molder
+1,4,7 Thrasher
+1,4,8 Auto-Bushwhacker
+1,4,9 Blowgun
+1,4,10 Lockup
+1,4,11 Watchman
+1,4,12 Tri-Bushwhacker
+1,5,4 Deadeye
+1,5,5 Auto-Railgun
+1,5,7 Covert
+2,1,0 Streamliner
+2,1,1 Nailgun
+2,1,2 Crop Duster
+2,1,5 Taser
+2,1,6 Zipper
+2,1,7 Bent Minigun
+2,1,8 Auto-Minigun
+2,1,9 Widget
+2,1,10 Tommy
+2,1,11 Machgun
+2,2,0 Auto-Gunner
+2,2,2 Auto-4
+2,2,3 Machine Gunner
+2,2,4 Gunner Trapper
+2,2,5 Cyclone
+2,2,6 Overgunner
+2,2,10 Rimfire
+2,2,11 Volley
+2,2,12 Double Gunner
+2,2,13 Bent Gunner
+2,2,14 Equalizer
+2,2,15 Dam
+2,3,0 Jalopy
+2,3,2 Diesel Trapper
+2,3,3 Polluter
+2,3,4 Auto-Diesel
+2,3,5 Foamer
+2,3,6 Gizmo
+2,4,3 Machine Guard
+2,4,6 Tri-Machine
+2,4,7 Expeller
+2,4,8 Auto-Machine Trapper
+2,4,9 Deviation
+2,4,10 Frother
+2,4,11 Machine Mega Trapper
+2,5,0 Duster
+2,5,2 Scatterer
+2,5,4 Shower
+2,5,5 Auto-Sprayer
+3,1,0 Fighter
+3,1,1 Booster
+3,1,2 Falcon
+3,1,3 Bomber
+3,1,4 Auto-Tri-Angle
+3,1,5 Surfer
+3,1,8 Cockatiel
+3,1,9 Integrator
+3,1,11 Quad-Angle
+3,1,13 Raven
+3,1,14 Phoenix
+3,1,15 Shoebill
+3,2,0 Auto-5
+3,2,1 Mega-3
+3,2,5 Crowbar
+3,2,6 Auto-Auto-3
+3,2,7 Combo
+3,3,5 Peashooter
+3,3,8 Auto-Trap Guard
+3,3,10 Tri-Trap Guard
+3,3,11 Garrison
+3,3,13 Overtrap Guard
+3,4,2 Septa-Trapper
+3,4,9 Tri-Mega Trapper
+3,4,10 Warkwarkwark
+3,5,0 Quad Twin
+3,5,1 Auto-Triple Twin
+3,5,2 Bent Triple
+3,5,3 Hewn Triple
+3,5,5 Triple Gunner
+4,0,0 Overlord
+4,0,1 Banshee
+4,0,2 Auto-Overseer
+4,0,3 Overdrive
+4,0,4 Commander
+4,0,6 Foreman
+4,0,7 Dopeseer
+4,0,8 Inspector
+4,1,0 Carrier
+4,1,1 Battleship
+4,1,2 Fortress
+4,1,3 Auto-Cruiser
+4,1,5 Productionist
+4,1,6 Cruiserdrive
+4,1,7 Hangar
+4,1,9 Baltimore
+4,1,10 Mosey
+4,1,11 Superintendent
+4,2,0 Necromancer
+4,2,1 Maleficitor
+4,2,2 Auto-Underseer
+4,2,3 Underdrive
+4,2,4 Infestor
+4,2,5 Pentaseer
+4,2,6 Conductor
+4,3,0 Factory
+4,3,1 Auto-Spawner
+4,3,2 Mega Spawner
+4,3,4 Spawnerdrive
+4,3,7 Laborer
+4,3,8 Foundry
+4,3,9 Issuer
+4,3,10 Handler
+4,4,0 Directorstorm
+4,4,5 Auto-Directordrive
+4,4,6 Honchodrive
+4,4,7 Doperdrive
+4,4,8 Managerdrive
+4,5,3 Big Cheese
+4,5,4 Auto-Honcho
+4,5,6 Junkie
+4,5,7 Minister
+4,6,0 Brisker
+4,6,6 Auto-Doper
+4,6,7 Controller
+4,7,0 Leader
+4,7,7 Auto-Manager
+5,0,1 Annihilator
+5,0,2 Hybrid
+5,0,4 Blower
+5,0,6 Queller
+5,0,7 Auto-Destroyer
+5,0,8 Hurler
+5,0,9 Slinker
+5,0,10 Harrier
+5,0,11 Toppler
+5,1,0 Constructor
+5,1,1 Auto-Builder
+5,1,2 Engineer
+5,1,3 Boomer
+5,1,4 Architect
+5,1,5 Conqueror
+5,1,6 Forger
+5,1,7 Stall
+5,1,8 Fashioner
+5,1,9 Charger
+5,1,10 Blockade
+5,2,1 Ordnance
+5,2,2 Beekeeper
+5,2,3 Field Gun
+5,2,6 Force
+5,2,7 Auto-Artillery
+5,2,8 Foctillery
+5,2,9 Discharger
+5,2,10 Blare
+5,2,11 Erne
+5,3,0 Skimmer
+5,3,1 Twister
+5,3,2 Swarmer
+5,3,3 Sidewinder
+5,3,5 Rocketeer
+5,3,6 Pitcher
+5,3,7 Cluster
+5,3,8 Projector
+5,3,9 Heaver
+5,3,10 Auto-Launcher
+5,3,12 Inception
+5,3,13 Seriemas
+5,3,14 Supplant
+5,3,15 Pumper
+5,4,0 Culverin
+5,4,1 Buckshot
+5,4,2 Boomstick
+5,4,6 Carbine
+5,4,7 Auto-Shotgun
+5,4,8 Petrifier
+5,5,3 Griffin
+5,5,4 Raptor
+5,5,5 Auto-Eagle
+5,5,6 Condor
+5,5,8 Virago
+5,6,0 Destabalizer
+5,6,1 Deposer
+5,6,4 Auto-Subverter
+5,6,6 Degrader
+5,6,8 Bent Subverter
+5,6,9 Tumble
+6,3,1 Tri-Pen
+6,3,2 Encircler
+6,3,3 Incarcerator
+6,3,4 Operator
+6,3,6 Hutch
+6,3,7 Interner
+6,3,8 Auto-Pen
+6,3,9 Fortifier
+6,3,10 Sty
+6,4,2 Machine Mech
+6,4,3 Mech Guard
+6,4,5 Cog
+6,4,6 Cobbler
+6,4,7 Auto-Mech
+6,4,8 Propper
+6,4,9 Technician
+6,7,1 Barrier
+6,7,2 Rampart
+6,7,3 Auto-Barricade
+6,7,4 Maw
+6,7,5 Electrocutor
+6,7,6 Clasp
+6,7,9 Bent Barricade
+6,7,10 Tri-Barricade
+6,7,11 Roadblock
+6,8,0 Kingpin
+6,8,1 Overmach
+6,8,2 Auto-Overtrapper
+6,8,3 Overtrapperdrive
+6,8,4 Battletrapper
+6,8,5 Captrapper
+6,8,6 Foretrapper
+6,8,7 Overbuilder
+6,8,9 Overpen
+6,8,10 Overmech
+6,8,11 Overwark
+6,9,6 Pulverizer
+6,9,7 Cornerer
+6,9,9 Auto-Mega Trapper
+6,9,12 Seizer
+6,9,13 Mega Wark
+0,0,1,1 Auto-Hewn Double
+0,0,1,2 Cleft
+0,0,1,3 Skewn Double
+0,0,1,4 Hewn Flank Double
+0,0,1,5 Hewn Gunner
+0,0,1,6 Warkwawarkrk
+0,0,2,0 Mega Auto-Double Twin
+0,0,2,1 Triple Auto-Double
+0,0,2,4 Auto-Bent Double
+0,0,2,5 Auto-Double Flank Twin
+0,0,2,6 Auto-Double Gunner
+0,0,2,7 Auto-Warkwark
+0,0,3,1 Penta Double
+0,0,3,3 Double Triplet
+0,0,3,5 Double Spreadshot
+0,0,3,6 Bent Flank Double
+0,0,3,7 Bent Double Gunner
+0,0,3,9 Split Double
+0,0,3,10 Waarrkwaarrk
+0,0,4,5 Double Flank Gunner
+0,0,4,6 Hipwatch
+0,0,4,7 Scuffler
+0,0,4,8 Warkwawawark
+0,0,6,5 Double Equalizer
+0,0,6,7 Sealer
+0,0,6,8 Setup
+0,1,0,0 Hepta Shot
+0,1,0,2 Flexed Hybrid
+0,1,0,3 Quintuplet
+0,1,0,4 Crackshot
+0,1,0,5 Auto-Penta Shot
+0,1,0,8 Deficiency
+0,1,0,9 Waarararrk
+0,1,1,1 Smearer
+0,1,1,2 Auto-Spreadshot
+0,1,1,3 Dauber
+0,1,1,4 Ballista
+0,1,1,5 Bozo
+0,1,1,6 Fungus
+0,1,2,0 Overshot
+0,1,2,1 Bent Synthesis
+0,1,2,2 Hatcher
+0,1,2,3 Bent Hybriddrive
+0,1,2,4 Bent Crossbreed
+0,1,2,7 Split Hybrid
+0,1,2,8 Auto-Bent Hybrid
+0,1,2,11 Triprid
+0,1,2,12 Bent Catcher
+0,1,4,3 Auto-Triplet
+0,1,4,4 Lasher
+0,1,4,6 Nitwit
+0,1,4,7 Warklet
+0,1,5,0 Slit Shot
+0,1,5,4 Auto-Split Shot
+0,1,5,6 Dork
+0,1,5,7 Splinter Shot
+0,1,6,0 Mega Auto-Triple Shot
+0,1,6,1 Triple Auto-Triple Shot
+0,3,0,0 Deca Tank
+0,3,0,3 Octo-Trapper
+0,3,0,4 Demise
+0,3,0,5 Auto-Octo Tank
+0,3,2,0 Mega Hexa-Trapper
+0,3,2,1 Auto-Hexa-Trapper
+0,3,2,5 Cozen
+0,3,3,2 Orbital Strike
+0,3,3,3 Auto-Death Star
+0,3,3,4 Unity
+0,3,4,0 Mega Auto-Hexa Tank
+0,3,4,1 Triple Auto-Hexa Tank
+0,3,4,5 Auto-Mingler
+0,4,8,1 Affiliator
+0,4,8,2 Converger
+0,4,8,3 Warkdrive
+0,4,8,4 Commix
+0,4,8,9 Auto-Coalesce
+0,4,9,0 Mega Auto-Wark
+0,4,9,1 Triple Auto-Wark
+1,0,0,0 Vindicator
+1,0,0,1 Peregrine
+1,0,0,2 Auto-Ranger
+1,0,0,3 Marine
+1,0,0,4 Hawker
+1,0,0,5 Doorman
+1,0,0,6 Maverick
+1,0,0,7 Acquirer
+1,0,2,0 Pursuer
+1,0,2,1 Owl
+1,0,2,2 Auto-Stalker
+1,0,2,4 Trailer
+1,0,2,5 Tailer
+1,0,2,6 Examiner
+1,0,2,7 Scrutiner
+1,0,3,0 Mega Auto-Assassin
+1,0,3,1 Triple Auto-Assassin
+1,0,3,5 Auto-Buttbuttin
+1,0,3,6 Auto-Hitman
+1,0,3,7 Auto-Sniper-3
+1,0,3,8 Auto-Enforcer
+1,0,3,9 Auto-Courser
+1,0,5,0 Overassassin
+1,0,5,1 Gunman
+1,0,5,2 Formulator
+1,0,5,3 Hitmandrive
+1,0,5,4 Contractor
+1,0,5,8 Mercenary
+1,0,5,9 Slayer
+1,0,5,10 Immolater
+1,0,6,0 Assassin-3
+1,0,6,1 Creeper
+1,0,6,2 Sniper-5
+1,0,6,3 Phantom
+1,0,6,4 Lever
+1,0,6,6 Alloy
+1,0,6,7 Rifle-3
+1,0,6,8 Hunter-3
+1,0,7,2 Pique
+1,0,7,7 Armament
+1,0,7,9 Flicher
+1,0,8,0 Sifter
+1,0,8,7 Garroter
+1,0,8,8 Lyncher
+1,0,8,10 Mega Courser
+1,1,0,0 Carnivore
+1,1,0,2 Rustler
+1,1,0,4 Auto-Predator
+1,1,0,5 Mega Predator
+1,1,0,6 Presage
+1,1,1,0 Overhunter
+1,1,1,1 Plunderer
+1,1,1,2 Maker
+1,1,1,3 Poacherdrive
+1,1,1,4 Nabber
+1,1,1,8 Auto-Poacher
+1,1,1,9 Mega Poacher
+1,1,1,10 Pilfer
+1,1,4,0 Mega Auto-Hunter
+1,1,4,1 Triple Auto-Hunter
+1,1,4,6 Auto-Mega Hunter
+1,1,4,7 Auto-Prober
+1,1,5,0 Ultra Hunter
+1,1,5,6 Mega Prober
+1,3,1,0 Recurver
+1,3,1,3 Harpoon
+1,3,1,4 Auto-Crossbow
+1,3,2,0 Overrifle
+1,3,2,1 Partisan
+1,3,2,2 Copier
+1,3,2,3 Armsmandrive
+1,3,2,7 Auto-Armsman
+1,3,3,1 Triple Auto-Rifle
+2,1,0,0 Rationalizer
+2,1,0,1 Disperser
+2,1,0,3 Auto-Streamliner
+2,1,0,4 Stapler
+2,1,0,6 Stunner
+2,1,0,7 Gusher
+2,1,0,8 Bent Streamliner
+2,1,0,9 Systematizer
+2,1,1,0 Vulcan
+2,1,1,1 Overnailer
+2,1,1,2 Tacker
+2,1,1,3 Auto-Nailgun
+2,1,1,5 Pincer
+2,1,1,6 Pinner
+2,1,1,7 Fang
+2,1,1,9 Jolter
+2,1,1,10 Bracer
+2,1,1,11 Double Nailgun
+2,1,1,12 Binder
+2,1,1,13 Hammer
+2,1,2,0 Overminigun
+2,1,2,1 Trimmer
+2,1,2,2 Shearer
+2,1,2,3 Crop Dusterdrive
+2,1,2,4 Sweeper
+2,1,2,8 Strapper
+2,1,2,9 Junker
+2,1,2,10 Auto-Crop Duster
+2,1,2,11 Sandstorm
+2,1,5,3 Osprey
+2,1,5,6 Zapper
+2,1,5,7 Auto-Taser
+2,1,5,8 Fryer
+2,1,5,9 Jerker
+2,1,5,10 Magnet
+2,1,6,6 Colonizer
+2,1,6,7 Hotbed
+2,1,6,10 Brio
+2,1,6,11 Pipeline
+2,1,6,12 Pepper
+2,1,7,0 Flexed Minigun
+2,1,7,1 Bent Double Minigun
+2,1,7,3 Hackshot
+2,1,7,4 Minilet
+2,1,7,10 Auto-Bent Minigun
+2,1,7,11 Bent Widget
+2,1,8,0 Mega Auto-Minigun
+2,1,8,1 Triple Auto-Minigun
+2,1,9,4 Auto-Widget
+2,2,0,0 Mega Auto-Gunner
+2,2,0,1 Auto-Equalizer
+2,2,0,2 Triple Auto-Gunner
+2,2,0,4 Auto-Auto-4
+2,2,0,5 Auto-Machine Gunner
+2,2,0,6 Auto-Gunner Trapper
+2,2,0,7 Auto-Cyclone
+2,2,0,8 Auto-Overgunner
+2,2,0,9 Auto-Battery
+2,2,0,12 Auto-Rimfire
+2,2,0,13 Auto-Volley
+2,2,2,0 Auto-6
+2,2,2,1 Batter-4
+2,2,2,4 Volley-4
+2,2,2,5 Chisel
+2,2,2,6 Trove
+2,2,3,0 Contrivance
+2,2,3,1 Clunker
+2,2,3,2 Motor Gunner
+2,2,3,3 Sprinkler
+2,2,3,5 Salvo
+2,2,3,6 Double Machine Gunner
+2,2,3,7 Machine Volley
+2,2,4,0 Cleaver
+2,2,4,1 Vallation
+2,2,4,2 Lure
+2,2,4,5 Gunner Builder
+2,2,4,6 Oracle
+2,2,4,8 Gunner Mech
+2,2,5,0 Tornado
+2,2,5,1 Dust Storm
+2,2,5,3 Tempest
+2,2,5,4 Gale
+2,2,5,5 Whirlwind
+2,2,6,0 Harbinger
+2,2,6,6 Battlegunner
+2,2,6,7 Capgunner
+2,2,6,8 Foregunner
+2,2,6,9 Overdouble Gunner
+2,2,6,10 Overequalizer
+2,2,10,0 Brink
+2,2,10,5 Beater
+2,2,10,6 Barber
+2,2,10,8 Rimflak
+2,2,10,9 Barrage
+2,2,10,10 Double Rimfire
+2,2,11,0 Cannonade
+2,2,11,3 Pummeler
+2,2,11,6 Double Volley
+2,2,11,8 Volley Hybrid
+2,2,12,8 Double Battery
+2,2,13,0 Flexed Gunner
+2,2,13,1 Spambrid
+2,2,13,3 Auto-Bent Gunner
+2,2,13,4 Dagger
+2,2,13,5 Bent Volley
+2,2,13,6 Donkey
+2,2,14,7 Cutlass
+2,2,14,8 Baton
+2,2,14,13 Hardware
+2,2,14,14 Equalizer Guard
+2,3,0,0 Lorry
+2,3,0,1 Contaminator
+2,3,0,3 Auto-Jalopy
+2,3,2,0 Jalopy Trapper
+2,3,2,1 Tri-Diesel Trapper
+2,3,2,3 Restrainer
+2,3,2,4 Artificer
+2,3,2,5 Stainer
+2,3,2,6 Blight
+2,3,2,7 Auto-Diesel Trapper
+2,3,3,0 Overdiesel
+2,3,3,1 Depraver
+2,3,3,2 Tainter
+2,3,3,3 Polluterdrive
+2,3,3,4 Befouler
+2,3,4,0 Mega Auto-Diesel
+2,3,4,1 Triple Auto-Diesel
+2,3,4,5 Auto-Polluter
+2,4,3,0 Fusil
+2,4,3,1 Shepherd
+2,4,3,8 Auto-Machine Guard
+2,4,3,10 Tri-Machine Guard
+2,4,3,11 Scout
+2,4,6,0 Septa-Machine
+2,4,6,1 Hexa-Machine
+2,4,6,2 Donjon
+2,4,6,4 Tri-Machine Mech
+2,4,7,1 Spitter
+2,4,7,8 Throttler
+2,4,7,9 Auto-Expeller
+2,4,8,0 Mega Auto-Machine Trapper
+2,4,8,1 Triple Auto-Machine Trapper
+2,4,8,2 Auto-Deviation
+2,4,9,1 Anomaly
+2,4,9,2 Sire
+2,4,9,3 Deviationdrive
+2,4,9,5 Contradictor
+3,1,0,0 Boxer
+3,1,0,1 Brawler
+3,1,0,2 Sparrow
+3,1,0,3 Blitz
+3,1,0,4 Auto-Fighter
+3,1,0,5 Strider
+3,1,0,7 Shocker
+3,1,0,8 Cockatoo
+3,1,0,9 Pug
+3,1,0,10 Mangle
+3,1,0,11 Scrimmer
+3,1,1,0 Rocket
+3,1,1,2 Merlin
+3,1,1,3 Assaulter
+3,1,1,4 Auto-Booster
+3,1,1,5 Soarer
+3,1,1,8 Galah
+3,1,1,9 Hightailer
+3,1,1,10 Loon
+3,1,1,11 Aspirer
+3,1,2,3 Auto-Falcon
+3,1,2,4 Harpy
+3,1,2,6 Caracara
+3,1,2,7 Merganser
+3,1,2,8 Cassowary
+3,1,3,0 Blockbuster
+3,1,3,1 Shiver
+3,1,3,6 Auto-Bomber
+3,1,3,7 Rider
+3,1,3,8 Whizzer
+3,1,3,10 Bolter
+3,1,3,11 Fleeter
+3,1,4,0 Mega Auto-Tri-Angle
+3,1,4,1 Triple Auto-Tri-Angle
+3,1,4,6 Auto-Surfer
+3,1,4,9 Auto-Cockatiel
+3,1,4,10 Auto-Integrator
+3,1,4,11 Auto-Defect
+3,1,4,12 Auto-Quad-Angle
+3,1,5,0 Browser
+3,1,5,1 Spindrift
+3,1,5,2 Surferdrive
+3,1,5,3 Roller
+3,1,5,11 Parrot
+3,1,5,12 Skater
+3,1,5,13 Klutz
+3,1,5,14 Glider
+3,1,8,0 Parakeet
+3,1,9,0 Overangle
+3,1,9,1 Assimilator
+3,1,9,2 Integratordrive
+3,1,9,3 Consolidator
+3,1,11,5 Conformer
+3,1,11,6 Spoiler
+3,1,11,7 Mandible
+3,1,11,8 Waster
+3,2,0,0 Auto-7
+3,2,0,1 Mega-5
+3,2,0,5 Pryer
+3,2,0,6 Auto-Auto-5
+3,2,1,0 Ultra-3
+3,2,1,1 Queller-3
+3,2,1,2 Hurler-3
+3,2,1,3 Slinker-3
+3,2,1,7 Crank
+3,2,1,8 Auto-Mega-3
+3,2,1,9 Sequence
+3,2,5,4 Spindle
+3,2,5,5 Auto-Crowbar
+3,2,5,6 Dualbar
+3,2,6,0 Mega Auto-Auto-3
+3,2,6,1 Triple Auto-Auto-3
+3,2,6,8 Auto-Combo
+3,2,7,0 Consolidation
+3,2,7,5 Band
+3,3,5,4 Auto-Peashooter
+3,3,5,7 Peashooterdrive
+3,3,5,8 Pommel
+3,3,5,9 Dotter
+3,3,5,10 Tri-Peashooter
+3,3,8,0 Mega Auto-Trap Guard
+3,3,8,1 Triple Auto-Trap Guard
+3,3,10,7 Hexa-Trap Guard
+3,3,10,8 Septa-Trap Guard
+3,4,2,0 Nona-Trapper
+3,4,2,5 Septa-Mech
+4,0,0,0 Overczar
+4,0,0,2 Despot
+4,0,0,3 Spectre
+4,0,0,4 Auto-Overlord
+4,0,0,5 Tyrant
+4,0,0,6 General
+4,0,0,7 Supervisor
+4,0,0,8 Headman
+4,0,0,9 Dopelord
+4,0,1,1 Spirit
+4,0,1,2 Wraith
+4,0,1,4 Auto-Banshee
+4,0,1,5 Revenant
+4,0,1,6 Bansheedrive
+4,0,1,7 Shade
+4,0,2,0 Mega Auto-Overseer
+4,0,2,1 Triple Auto-Overseer
+4,0,2,6 Auto-Overdrive
+4,0,2,7 Auto-Commander
+4,0,2,8 Auto-Foreman
+4,0,2,9 Auto-Dopeseer
+4,0,3,2 Overgunnerdrive
+4,0,3,5 Instructor
+4,0,3,6 Overstorm
+4,0,3,7 Foredrive
+4,0,3,8 Dopeseerdrive
+4,0,4,3 Prescriber
+4,0,4,4 Governer
+4,0,4,5 Regulator
+4,0,4,7 Gaffer
+4,0,4,8 Bidder
+4,0,4,9 Adjurer
+4,0,6,1 Overcheese
+4,0,6,6 Stocker
+4,0,6,7 Ganger
+4,0,6,8 Doppelganger
+4,0,7,0 Briskseer
+4,0,7,6 Mogul
+4,1,0,0 Conveyor
+4,1,0,1 Carrierdrive
+4,1,0,2 Auto-Carrier
+4,1,0,4 Stronghold
+4,1,0,5 Initiator
+4,1,0,6 Epoch
+4,1,0,7 Lugger
+4,1,1,0 Warship
+4,1,1,1 Bastion
+4,1,1,6 Auto-Battleship
+4,1,1,7 Battledrive
+4,1,1,8 Bismarck
+4,1,1,9 Battlewagon
+4,1,1,10 Man o' War
+4,1,2,3 Refuge
+4,1,2,6 Bunker
+4,1,2,7 Fortdrive
+4,1,2,8 Palisade
+4,1,2,9 Outpost
+4,1,2,10 Fortalice
+4,1,3,0 Mega Auto-Cruiser
+4,1,3,1 Triple Auto-Cruiser
+4,1,3,5 Auto-Cruiserdrive
+4,1,3,6 Auto-Productionist
+4,1,3,7 Auto-Baltimore
+4,1,5,4 Manufacture
+4,1,5,5 Dirigible
+4,1,5,8 Fabrication
+4,1,5,9 Inducer
+4,1,6,6 Helipad
+4,1,6,7 Baltimoredrive
+4,1,6,8 Moseydrive
+4,1,7,0 Courier
+4,1,7,1 Warlord
+4,1,7,2 Aerodome
+4,1,7,3 Auto-Hangar
+4,1,7,4 Mega Hangar
+4,1,7,6 Airfield
+4,1,7,9 Grinder
+4,1,7,10 Barn
+4,1,7,11 Reposit
+4,1,9,9 Big Swiss
+4,1,9,10 Harbor
+4,1,10,0 Sailor
+4,2,0,0 Diviner
+4,2,0,1 Charmer
+4,2,0,2 Auto-Necromancer
+4,2,0,3 Necrodrive
+4,2,0,4 Plaguer
+4,2,0,5 Pentamancer
+4,2,1,0 Bewitcher
+4,2,1,2 Auto-Maleficitor
+4,2,1,3 Hexer
+4,2,1,4 Femaleficitor
+4,2,1,5 Witch
+4,2,2,0 Mega Auto-Underseer
+4,2,2,1 Triple Auto-Underseer
+4,2,2,4 Auto-Underdrive
+4,2,2,5 Auto-Infestor
+4,2,2,6 Auto-Pentaseer
+4,2,3,3 Infestordrive
+4,2,3,4 Pentadrive
+4,2,4,1 Pollen
+4,2,5,4 Warlock
+4,3,0,0 Industry
+4,3,0,1 Auto-Factory
+4,3,0,2 Mega Factory
+4,3,0,3 Factorydrive
+4,3,0,4 Mandarin
+4,3,0,6 Worker
+4,3,0,7 Shopper
+4,3,0,9 Facility
+4,3,1,0 Mega Auto-Spawner
+4,3,1,1 Triple Auto-Spawner
+4,3,1,3 Auto-Mega Spawner
+4,3,1,5 Auto-Spawnerdrive
+4,3,1,6 Auto-Captain
+4,3,1,8 Auto-Laborer
+4,3,1,9 Auto-Foundry
+4,3,1,10 Auto-Issuer
+4,3,2,0 Ultra Spawner
+4,3,2,3 Mega Spawnerdrive
+4,3,2,4 Mega Captain
+4,3,2,6 Mega Laborer
+4,3,2,7 Mega Foundry
+4,3,2,8 Mega Issuer
+4,3,4,0 Spawnerstorm
+4,3,4,5 Captaindrive
+4,3,4,7 Labordrive
+4,3,4,8 Foundrydrive
+4,3,4,9 Issuerdrive
+4,3,7,4 Toiler
+4,3,7,6 Servicer
+4,3,7,7 Endeavor
+4,3,7,8 Slogger
+4,3,8,8 Top Banana
+4,3,8,9 Plant
+4,3,9,0 Circulator
+4,4,0,3 Auto-Directorstorm
+4,4,0,4 Honchostorm
+4,4,0,5 Downpourer
+4,4,0,6 Doperstorm
+4,4,5,0 Mega Auto-Directordrive
+4,4,5,1 Triple Auto-Directordrive
+4,4,6,4 Big Cheesedrive
+4,4,6,5 Auto-Honchodrive
+4,4,6,6 Junkiedrive
+4,4,7,0 Briskerdrive
+4,4,7,6 Auto-Doperdrive
+4,5,3,0 Bigger Cheese
+4,5,3,5 Auto-Big Cheese
+4,5,3,6 Stoner
+4,5,4,0 Mega Auto-Honcho
+4,5,4,1 Triple Auto-Honcho
+4,5,4,7 Auto-Junkie
+4,5,6,0 Addict
+4,6,0,0 Adderall
+4,6,0,6 Auto-Brisker
+4,6,6,0 Mega Auto-Doper
+4,6,6,1 Triple Auto-Doper
+5,0,1,0 Obliterator
+5,0,1,1 Big Mac
+5,0,1,2 Compound
+5,0,1,3 Assembler
+5,0,1,4 Wiper
+5,0,1,5 Ultra Trapper
+5,0,1,6 Stomper
+5,0,1,7 Auto-Annihilator
+5,0,1,8 Shaver
+5,0,1,9 Eradicator
+5,0,2,0 Overdestroyer
+5,0,2,1 Synthesis
+5,0,2,2 Enactor
+5,0,2,3 Hybriddrive
+5,0,2,4 Crossbreed
+5,0,2,6 Meld
+5,0,2,7 Puffer
+5,0,2,8 Catcher
+5,0,2,9 Cross
+5,0,2,10 Auto-Hybrid
+5,0,2,11 Mongrel
+5,0,2,12 Amalgam
+5,0,4,0 Blackjack
+5,0,4,1 Blusterer
+5,0,4,3 Buster
+5,0,4,4 Licker
+5,0,4,5 Walloper
+5,0,4,7 Auto-Blower
+5,0,4,8 Storm
+5,0,4,9 Lavisher
+5,0,4,10 Zephyr
+5,0,6,0 Annexer
+5,0,6,3 Creator
+5,0,6,6 Crusher
+5,0,6,7 Represser
+5,0,6,9 Clobberer
+5,0,6,10 Thwarter
+5,0,6,11 Stifler
+5,0,7,0 Mega Auto-Destroyer
+5,0,7,1 Triple Auto-Destroyer
+5,0,7,2 Auto-Conqueror
+5,0,7,5 Auto-Constructor
+5,0,7,8 Auto-Queller
+5,0,7,9 Auto-Hurler
+5,0,7,10 Auto-Slinker
+5,0,8,1 Bazooka
+5,0,8,2 Catapult
+5,0,8,3 Myriad
+5,0,8,4 Leviathan
+5,0,8,5 Bulker
+5,0,8,6 Bombard
+5,0,8,7 Python
+5,0,8,8 Claimant
+5,0,8,9 Incline
+5,0,8,12 Bunger
+5,0,8,13 Deliverer
+5,0,8,14 Slingshot
+5,0,9,0 Rogue
+5,0,9,1 Massacrer
+5,0,9,4 Settler
+5,1,0,2 Mechanic
+5,1,0,3 Recoiler
+5,1,0,4 Mastermind
+5,1,0,5 Overwhelmer
+5,1,0,7 Hurdle
+5,1,0,9 Stormer
+5,1,1,0 Mega Auto-Builder
+5,1,1,1 Triple Auto-Builder
+5,1,1,3 Auto-Engineer
+5,1,1,4 Auto-Boomer
+5,1,1,6 Auto-Forger
+5,1,1,7 Auto-Stall
+5,1,1,8 Auto-Fashioner
+5,1,1,9 Auto-Charger
+5,1,2,2 Parryer
+5,1,2,3 Originator
+5,1,2,4 Vanquisher
+5,1,2,5 Producer
+5,1,2,6 Cubicle
+5,1,2,7 Machinist
+5,1,2,8 Driver
+5,1,2,9 Specialist
+5,1,2,10 Deviser
+5,1,3,3 Ricochet
+5,1,3,4 Defeater
+5,1,3,5 Rebounder
+5,1,3,6 Fender
+5,1,3,7 Bent Boomer
+5,1,3,8 Deflector
+5,1,4,3 Artist
+5,1,4,5 Castle
+5,1,4,6 Inventor
+5,1,4,7 Designer
+5,1,4,8 Draftsman
+5,1,4,9 Architect Guard
+5,1,5,9 Overrunner
+5,1,6,4 Planner
+5,1,6,6 Former
+5,1,6,7 Caster
+5,1,6,8 Bounder
+5,1,6,9 Blend
+5,1,6,10 Shaper
+5,1,6,11 Modeler
+5,1,6,12 Melder
+5,1,8,3 Fashionerdrive
+5,1,8,4 Methodist
+5,1,8,11 Rallyer
+5,1,9,0 Assailer
+5,2,1,0 Ruiner
+5,2,1,1 Escort
+5,2,1,2 Arsenal
+5,2,1,3 Huntsman
+5,2,1,5 Auto-Ordnance
+5,2,1,6 Firepower
+5,2,1,7 Mega Ordnance
+5,2,1,8 Carnage
+5,2,1,10 Broadsider
+5,2,2,0 Apiarist
+5,2,2,1 Bumbler
+5,2,2,2 Beemaster
+5,2,2,6 Carronade
+5,2,2,7 Auto-Beekeeper
+5,2,2,8 Apiculturist
+5,2,3,0 Skidder
+5,2,3,1 Spinner
+5,2,3,2 Packer
+5,2,3,3 Anaconda
+5,2,3,4 Aviator
+5,2,3,5 Rainmaker
+5,2,3,7 Strafe
+5,2,3,8 Embargo
+5,2,3,9 Auto-Field Gun
+5,2,3,10 Slinger
+5,2,3,11 Howitzer
+5,2,3,12 Magnum
+5,2,3,14 Conveyer
+5,2,3,15 Flurry
+5,2,6,0 Overartillery
+5,2,6,1 Mixer
+5,2,6,2 Generator
+5,2,6,3 Forcedrive
+5,2,6,4 Energizer
+5,2,6,5 Plaster
+5,2,6,11 Auto-Force
+5,2,6,12 Vigor
+5,2,6,13 Vitality
+5,2,7,0 Mega Auto-Artillery
+5,2,7,1 Triple Auto-Artillery
+5,2,7,2 Auto-Mortar
+5,2,7,9 Auto-Foctillery
+5,2,7,10 Auto-Discharger
+5,2,8,0 Foctar
+5,2,8,7 Pivoter
+5,2,9,0 Fusillade
+5,2,9,8 Hatchet
+5,2,9,9 Kitter
+5,2,9,10 Concoctor
+5,3,0,0 Auto-Skimmer
+5,3,0,1 Dipper
+5,3,0,2 Hyperskimmer
+5,3,0,3 Ream
+5,3,0,4 Ladle
+5,3,0,6 Torpedo
+5,3,0,7 Bowler
+5,3,0,9 Pit Viper
+5,3,0,11 Ticker
+5,3,0,12 Scorcher
+5,3,1,0 Auto-Twister
+5,3,1,1 Spouter
+5,3,1,2 Hypertwister
+5,3,1,3 Helix
+5,3,1,4 Spiral
+5,3,1,5 Gyro
+5,3,1,6 Rattler
+5,3,1,7 Squaller
+5,3,1,9 Torsion
+5,3,1,10 Collision
+5,3,1,12 Grenade
+5,3,2,0 Flocker
+5,3,2,1 Auto-Swarmer
+5,3,2,3 Hyperswarmer
+5,3,2,4 Molotov
+5,3,2,6 Swarmerdrive
+5,3,2,7 Voyage
+5,3,2,9 Cartridge
+5,3,2,10 Shoal
+5,3,3,0 Veerer
+5,3,3,1 Caduceus
+5,3,3,2 Auto-Sidewinder
+5,3,3,3 Hyperwinder
+5,3,3,5 Vermin
+5,3,3,6 Boomslang
+5,3,3,8 Mamba
+5,3,3,11 Hognose
+5,3,5,0 Firework
+5,3,5,1 ICBM
+5,3,5,2 Venture
+5,3,5,8 Careerer
+5,3,5,9 Auto-Rocketeer
+5,3,5,10 Pyromaniac
+5,3,6,0 Chucker
+5,3,6,2 Propeller
+5,3,6,3 Dispatcher
+5,3,6,6 Spieler
+5,3,6,7 Auto-Pitcher
+5,3,6,9 Mine
+5,3,6,12 Pleuron
+5,3,7,0 Auto-Cluster
+5,3,7,1 Gimmicker
+5,3,7,2 Nester
+5,3,7,3 Hypercluster
+5,3,7,11 Shell
+5,3,7,12 Neutron
+5,3,7,14 Flock
+5,3,7,15 Recursor
+5,3,8,0 Auto-Projector
+5,3,8,1 Resourcer
+5,3,8,2 Jutter
+5,3,8,8 Hyperprojector
+5,3,8,9 Guarder
+5,3,9,0 Overlauncher
+5,3,9,1 Lobber
+5,3,9,2 Duper
+5,3,9,3 Heaverdrive
+5,3,9,4 Emitter
+5,3,9,13 Tosser
+5,3,9,15 Auto-Heaver
+5,3,10,0 Mega Auto-Launcher
+5,3,10,1 Triple Auto-Launcher
+5,3,10,2 Auto-Inception
+5,3,12,0 Hyperinception
+6,3,1,0 Corral
+6,3,1,1 Tri-Encircler
+6,3,1,2 Paddock
+6,3,1,3 Coop
+6,3,1,4 Tri-Operator
+6,3,1,5 Tri-Incarcerator
+6,3,2,0 Quarrion
+6,3,2,1 Machete
+6,3,2,3 Picket
+6,3,2,4 Exerter
+6,3,2,5 Auto-Encircler
+6,3,2,6 Environ
+6,3,2,7 Landau
+6,3,2,8 Kraal
+6,3,3,2 Gunner Pen
+6,3,3,3 Nuker
+6,3,3,4 Overthrower
+6,3,3,6 Confiner
+6,3,3,7 Auto-Incarcerator
+6,3,3,8 Jailer
+6,3,4,4 Cacatua
+6,3,4,5 Employer
+6,3,4,6 Utilizer
+6,3,4,7 Auto-Operator
+6,3,6,2 Corella
+6,3,6,3 Guardrail
+6,3,6,4 Brig
+6,3,6,8 Retainer
+6,3,6,9 Auto-Hutch
+6,3,7,1 Kettle
+6,3,7,2 Ringer
+6,3,7,4 Internerdrive
+6,3,7,5 Probationer
+6,3,7,6 Delayer
+6,3,7,8 Auto-Interner
+6,3,8,0 Mega Auto-Pen
+6,3,8,1 Triple Auto-Pen
+6,4,2,3 Auto-Machine Mech
+6,4,2,4 Repairman
+6,4,2,7 Rigger
+6,4,3,6 Patrol
+6,4,3,7 Auto-Mech Guard
+6,4,3,9 Tri-Mech Guard
+6,4,5,1 Yard
+6,4,5,3 Hexa-Mech
+6,4,5,7 Contriver
+6,4,5,8 Auto-Cog
+6,4,6,1 Fuser
+6,4,6,3 Automaton
+6,4,6,4 cobblerdrive
+6,4,6,5 Restorer
+6,4,6,9 Auto-Cobbler
+6,4,7,0 Mega Auto-Mech
+6,4,7,1 Triple Auto-Mech
+4,4,0,0 Vortex

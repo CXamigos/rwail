@@ -1,0 +1,18 @@
+{
+    mode: normal,
+    tanks: [1, 2, 1, 4],
+    stats: 1/1/5/8/6/8/6/7,
+    growth_extended_upgrades_order_to_max: [2, 7, 1, 0, 8, 9],
+    autospin: false,
+    autofire: false,
+    pathfinding_facing_angle_offset: 0
+},
+{
+    mode: normal,
+    tanks: [1, 2, 1, 3],
+    stats: 1/1/5/8/6/8/6/7,
+    growth_extended_upgrades_order_to_max: [2, 7, 1, 0, 8, 9],
+    autospin: false,
+    autofire: false,
+    pathfinding_facing_angle_offset: 0
+}

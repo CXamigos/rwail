@@ -1,0 +1,18 @@
+{
+    mode: normal,
+    tanks: [1, 5, 0],
+    stats: 1/1/7/8/7/8/3/7,
+    growth_extended_upgrades_order_to_max: [2, 7, 1, 0, 8, 9],
+    autospin: false,
+    autofire: false,
+    pathfinding_facing_angle_offset: 0
+},
+{
+    mode: ar,
+    tank: Auto-Railgun,
+    stats: 1/1/7/8/7/8/3/7,
+    growth_extended_upgrades_order_to_max: [2, 7, 1, 0, 8, 9],
+    autospin: false,
+    autofire: false,
+    pathfinding_facing_angle_offset: 0
+}

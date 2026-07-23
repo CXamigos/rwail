@@ -1,11 +1,12 @@
 {
     "scripts": {
         "start": "node server.js",
-        "build": "node --check discord_bot.js && node --check index2.js && node --check server.js"
+        "build": "node --check discord_bot.js && node --check index2.js && node --check server.js && node --check register_commands.js && node --check menu/lcl.js && node --check menu/start.js"
     },
     "dependencies": {
         "discord.js": "^14.26.4",
         "dotenv": "^17.4.2",
+        "express": "^5.2.1",
         "https-proxy-agent": "^9.1.0",
         "msgpackr": "^1.12.1",
         "node-fetch": "^3.3.2",
