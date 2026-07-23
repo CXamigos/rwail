@@ -2914,7 +2914,7 @@ const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID || "1521765557064695858";
 
 const PROXIES = [
-    "http://YVCu6gye0PIlQ_lightning_proxy-country-any-speed-fast:UwUsillygirl1@resident.lightningproxies.net:8080",
+    "http://IPv4D_rz6DxsC6CV-ttl-0:QkZMgpgYdEPIflF@datacenter-ww.lightningproxies.net:1338",
 ];
 const COOLDOWN_FILE = path.join(__dirname, "cooldowns.json");
 const VERIFIED_FILE = path.join(__dirname, "verified.txt");
