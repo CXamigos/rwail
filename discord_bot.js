@@ -2914,7 +2914,7 @@ const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID || "1521765557064695858";
 
 const PROXIES = [
-    "http://IPv4D_rz6DxsC6CV-ttl-0:QkZMgpgYdEPIflF@datacenter-ww.lightningproxies.net:1338",
+    "http://1fiRasl1-ttl-0:ADL35LOraUbh6fA@datacenter-ww.lightningproxies.net:1338",
 ];
 const COOLDOWN_FILE = path.join(__dirname, "cooldowns.json");
 const VERIFIED_FILE = path.join(__dirname, "verified.txt");
@@ -3834,13 +3834,12 @@ client.on("interactionCreate", async (interaction) => {
 
         let premiumKey = null;
         if (interaction.commandName === "premium-farm") {
-            premiumKey = getKeyForUser(userId);
-            if (!premiumKey && !isBypassUser && !hasUnlimitedRole) {
+            if (!isBypassUser) {
                 const errEmbed = new EmbedBuilder()
                     .setColor(0xff0000)
                     .setTitle("system: access denied")
                     .setDescription(
-                        "You're not a premium user, boost the server 2 times in order to get Harras premium",
+                        "This command is restricted to the owner only.",
                     )
                     .setTimestamp();
 
@@ -3849,6 +3848,7 @@ client.on("interactionCreate", async (interaction) => {
                     ephemeral: true,
                 });
             }
+            premiumKey = getKeyForUser(userId);
         }
 
         if (isFarm) {
