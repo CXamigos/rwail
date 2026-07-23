@@ -15,7 +15,6 @@ const {
 const { Worker } = require("worker_threads");
 const fs = require("fs");
 const path = require("path");
-const express = require("express");
 const { WebSocketServer, WebSocket } = require("ws");
 const { pack, unpack } = require("msgpackr");
 const { clientPackets } = require("./lib/arras-client");
@@ -36,37 +35,6 @@ const BOT_WORKER_LIMITS = {
 };
 const BOT_BOOT_TIMEOUT = 12000;
 const SESSION_CLEANUP_DELAY = 15000;
-
-// Arras Client Proxy Constants
-const INITIAL_SERVER_PACKET = Buffer.from('00010001ffa47515f98112ce', 'hex');
-const SERVER_PROTOCOLS = ['arras.io#v1.4+sls+et0', 'arras.io'];
-const HANDSHAKE_B = Buffer.from(INITIAL_SERVER_PACKET.subarray(4)).reverse().toString('hex');
-
-function normalizeCloseCode(code) {
-    if (typeof code !== 'number' || !Number.isInteger(code)) return undefined;
-    if (code === 1000) return 1000;
-    if (code >= 1001 && code <= 1014 && ![1004, 1005, 1006].includes(code)) return code;
-    if (code >= 3000 && code <= 4999) return code;
-    return undefined;
-}
-
-function normalizeCloseReason(reason) {
-    if (reason == null) return '';
-    const text = Buffer.isBuffer(reason) ? reason.toString() : String(reason);
-    return Buffer.byteLength(text) > 123 ? text.slice(0, 123) : text;
-}
-
-function normalizeTargetUrl(rawTarget) {
-    let targetUrl = rawTarget;
-    try {
-        targetUrl = decodeURIComponent(rawTarget);
-    } catch (_) { }
-    const parsed = new URL(targetUrl);
-    parsed.searchParams.set('b', HANDSHAKE_B);
-    parsed.searchParams.set('t', Math.floor(Date.now() / 1000).toString());
-    targetUrl = parsed.toString();
-    return targetUrl;
-}
 const PREMIUM_MODAL_DESCRIPTION =
     "Spawn 90+ bots and control them with your mouse. Boost the server twice to unlock Harras Premium.";
 
@@ -425,61 +393,8 @@ const server = http.createServer((req, res) => {
         const url = require("url");
         const parsedUrl = url.parse(req.url, true);
 
-        // Serve custom client
-        if (parsedUrl.pathname === "/client" && req.method === "GET") {
-            const filePath = path.join(__dirname, "menu", "simulation.html");
-            fs.readFile(filePath, (err, data) => {
-                if (err) {
-                    res.writeHead(404);
-                    res.end("Not Found");
-                    return;
-                }
-                res.writeHead(200, { "Content-Type": "text/html" });
-                res.end(data);
-            });
-            return;
-        }
-
-        // Serve static assets for client
-        if (parsedUrl.pathname.startsWith("/wasm/") || 
-            parsedUrl.pathname.endsWith(".js") || 
-            parsedUrl.pathname.endsWith(".wasm") ||
-            parsedUrl.pathname.startsWith("/favicon/")) {
-            
-            let filePath;
-            if (parsedUrl.pathname.startsWith("/wasm/")) {
-                filePath = path.join(__dirname, "menu", parsedUrl.pathname);
-            } else if (parsedUrl.pathname.startsWith("/favicon/")) {
-                // You might need a favicon folder in menu or arras
-                filePath = path.join(__dirname, "menu", parsedUrl.pathname);
-            } else {
-                filePath = path.join(__dirname, "menu", parsedUrl.pathname);
-            }
-
-            fs.readFile(filePath, (err, data) => {
-                if (err) {
-                    // Fallback to original routes if file not found in menu
-                    handleOriginalRoutes();
-                    return;
-                }
-                const ext = path.extname(filePath);
-                const contentType = {
-                    ".wasm": "application/wasm",
-                    ".js": "application/javascript",
-                    ".png": "image/png",
-                    ".svg": "image/svg+xml",
-                    ".json": "application/json",
-                    ".css": "text/css",
-                }[ext] || "application/octet-stream";
-                res.writeHead(200, { "Content-Type": contentType });
-                res.end(data);
-            });
-            return;
-        }
-
-        function handleOriginalRoutes() {
-            // Magic link auto-login (one-time use)
-            if (parsedUrl.pathname === "/magic" && req.method === "GET") {
+        // Magic link auto-login (one-time use)
+        if (parsedUrl.pathname === "/magic" && req.method === "GET") {
             const token = parsedUrl.query.token;
             const result = useMagicLink(token);
 
@@ -2880,9 +2795,6 @@ const server = http.createServer((req, res) => {
 
         res.writeHead(200, { "Content-Type": "text/plain" });
         res.end("Bot is running\n");
-    }
-
-    handleOriginalRoutes();
     } catch (error) {
         console.error(error);
         res.writeHead(500, { "Content-Type": "text/plain" });
@@ -2935,123 +2847,7 @@ server.listen(PORT, () => {
     }
 });
 
-const wss = new WebSocketServer({ noServer: true });
-const proxyWss = new WebSocketServer({
-    noServer: true,
-    handleProtocols(protocols) {
-        if (protocols.has('arras.io#v1.4+sls+et0')) return 'arras.io#v1.4+sls+et0';
-        if (protocols.has('arras.io')) return 'arras.io';
-        return false;
-    },
-});
-
-proxyWss.on('connection', (client, req, targetUrl) => {
-    const clientUserAgent = req.headers['user-agent'] || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36';
-    const clientLanguage = req.headers['accept-language'] || 'en-US,en;q=0.9';
-    console.log(`[proxy] game socket -> ${targetUrl}`);
-
-    const upstream = new WebSocket(targetUrl, SERVER_PROTOCOLS, {
-        headers: {
-            'User-Agent': clientUserAgent,
-            'Origin': 'https://arras.io',
-            'Pragma': 'no-cache',
-            'Cache-Control': 'no-cache',
-            'Accept-Encoding': 'gzip, deflate, br, zstd',
-            'Accept-Language': clientLanguage,
-        },
-        perMessageDeflate: true,
-    });
-
-    let upstreamOpen = false;
-    let firstServerPacketSent = false;
-    const pendingPackets = [];
-
-    function flushPendingPackets() {
-        while (pendingPackets.length && upstream.readyState === WebSocket.OPEN) {
-            const packet = pendingPackets.shift();
-            if (!firstServerPacketSent) {
-                firstServerPacketSent = true;
-                upstream.send(INITIAL_SERVER_PACKET);
-            } else {
-                upstream.send(packet);
-            }
-        }
-    }
-
-    client.on('message', (packet, isBinary) => {
-        const normalizedPacket = isBinary ? packet : Buffer.from(packet);
-        pendingPackets.push(normalizedPacket);
-        if (upstreamOpen) flushPendingPackets();
-    });
-
-    client.on('close', (code, reason) => {
-        if (upstream.readyState === WebSocket.OPEN || upstream.readyState === WebSocket.CONNECTING) {
-            const safeCode = normalizeCloseCode(code);
-            const safeReason = normalizeCloseReason(reason);
-            if (safeCode === undefined) upstream.close();
-            else upstream.close(safeCode, safeReason);
-        }
-    });
-
-    client.on('error', () => {
-        if (upstream.readyState === WebSocket.OPEN || upstream.readyState === WebSocket.CONNECTING) {
-            upstream.close();
-        }
-    });
-
-    upstream.on('open', () => {
-        upstreamOpen = true;
-        flushPendingPackets();
-    });
-
-    upstream.on('message', (packet, isBinary) => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(packet, { binary: isBinary });
-        }
-    });
-
-    upstream.on('close', (code, reason) => {
-        const safeCode = normalizeCloseCode(code);
-        const closeReason = normalizeCloseReason(reason);
-        if (client.readyState === WebSocket.OPEN || client.readyState === WebSocket.CONNECTING) {
-            if (safeCode === undefined) client.close();
-            else client.close(safeCode, closeReason);
-        }
-    });
-
-    upstream.on('error', (error) => {
-        if (client.readyState === WebSocket.OPEN || client.readyState === WebSocket.CONNECTING) {
-            client.close(1011, 'Upstream WebSocket error');
-        }
-    });
-});
-
-server.on('upgrade', (req, socket, head) => {
-    const url = require("url");
-    const parsedUrl = url.parse(req.url, true);
-
-    if (parsedUrl.pathname === '/game-proxy') {
-        const rawTarget = parsedUrl.query.target;
-        if (!rawTarget) {
-            socket.destroy();
-            return;
-        }
-
-        const targetUrl = normalizeTargetUrl(rawTarget);
-        if (!/^wss?:\/\//i.test(targetUrl)) {
-            socket.destroy();
-            return;
-        }
-
-        proxyWss.handleUpgrade(req, socket, head, (ws) => {
-            proxyWss.emit('connection', ws, req, targetUrl);
-        });
-    } else {
-        wss.handleUpgrade(req, socket, head, (ws) => {
-            wss.emit('connection', ws, req);
-        });
-    }
-});
+const wss = new WebSocketServer({ server });
 wss.on("connection", (ws) => {
     console.log("[system] premium sync: [ client connected ]");
     ws.on("message", (msg) => {
@@ -3632,10 +3428,6 @@ const commands = [
     new SlashCommandBuilder()
         .setName("enable")
         .setDescription("enable farm commands for everyone (owner only)"),
-    new SlashCommandBuilder()
-        .setName("client")
-        .setDescription("get the link to the custom arras client")
-        .setDMPermission(true),
 ].map((command) => command.toJSON());
 
 const rest = new REST({ version: "10" }).setToken(TOKEN);
@@ -4025,39 +3817,6 @@ client.on("interactionCreate", async (interaction) => {
         });
     }
 
-    if (interaction.commandName === "client") {
-        let clientUrl = process.env.CLIENT_URL;
-        
-        if (!clientUrl) {
-            if (process.env.RAILWAY_PUBLIC_DOMAIN) {
-                clientUrl = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/client`;
-            } else {
-                clientUrl = `http://localhost:${PORT}/client`;
-            }
-        }
-
-        const clientEmbed = new EmbedBuilder()
-            .setColor(ACCENT_EMBED)
-            .setTitle("Harras Custom Client")
-            .setDescription(
-                "Access the custom Arras client with built-in features and premium capabilities."
-            )
-            .setTimestamp();
-
-        const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setLabel("Open Client")
-                .setURL(clientUrl)
-                .setStyle(ButtonStyle.Link)
-        );
-
-        return await interaction.reply({
-            embeds: [clientEmbed],
-            components: [row],
-            ephemeral: true,
-        });
-    }
-
     if (
         interaction.commandName === "find" ||
         interaction.commandName === "farm" ||
@@ -4094,7 +3853,7 @@ client.on("interactionCreate", async (interaction) => {
 
         if (isFarm) {
             const ownerData = loadOwnerData();
-            if (ownerData.disabled && !isBypassUser) {
+            if (ownerData.disabled && !isBypassUser && !hasUnlimitedRole) {
                 const disabledEmbed = new EmbedBuilder()
                     .setColor(0xff0000)
                     .setTitle("system: command disabled")
