@@ -67,7 +67,7 @@ function resolvePartyCode(partyCode) {
         return { host: partyCode, party: "" };
     }
 
-    // Check if it's a party link format like "ca2559" (server + party ID)
+    // Check if it's a party link format like "ca2559" (server + party ID) x
     // Extract server name (first 2-3 chars) and party ID (remaining digits)
     const serverMatch = partyCode.match(/^([a-zA-Z]{2,3})(\d+)?$/);
 
