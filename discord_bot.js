@@ -11,6 +11,7 @@ const {
     ActionRowBuilder,
     ButtonBuilder,
     ButtonStyle,
+    PermissionFlagsBits,
 } = require("discord.js");
 const { Worker } = require("worker_threads");
 const fs = require("fs");
@@ -3428,6 +3429,19 @@ const commands = [
     new SlashCommandBuilder()
         .setName("enable")
         .setDescription("enable farm commands for everyone (owner only)"),
+    new SlashCommandBuilder()
+        .setName("invalidate")
+        .setDescription("blacklist the AI support from replying in this ticket channel anymore"),
+    new SlashCommandBuilder()
+        .setName("include")
+        .setDescription("add extra FAQ info for the AI support bot (admin only)")
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+        .addStringOption((option) =>
+            option
+                .setName("information")
+                .setDescription("one or more lines - paste each fact on its own line")
+                .setRequired(true),
+        ),
 ].map((command) => command.toJSON());
 
 const rest = new REST({ version: "10" }).setToken(TOKEN);
@@ -3468,7 +3482,104 @@ const rest = new REST({ version: "10" }).setToken(TOKEN);
     }
 })();
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
+
+const GeminiKey = "AQ.Ab8RN6K5gXvdbD4QGdDT8qFEOcr4s3VBnDnwf5rHQmKYVm0LLA";
+const GeminiModel = "gemini-2.5-flash-lite";
+const GeminiApiBase = "https://generativelanguage.googleapis.com/v1beta/models";
+const BaseSystemPrompt = `You are the HARRAS support bot. HARRAS is a private arras.io bot-farm toolkit sold to a few friends. Answer ONLY questions about HARRAS using the knowledge base below. If asked anything unrelated, briefly refuse and steer back. Be short, casual, helpful. Never invent features.
+
+=== KNOWLEDGE BASE ===
+
+WHAT IT IS
+- arras.io multi-bot controller. Two modes: headless ('run me.bat', heavier DOM-based workers) and farm/websocket ('run ws.bat', light pure-protocol bots ~10-20MB each). Windows/macOS/Linux releases exist.
+
+FIRST RUN (WINDOWS)
+1. Unzip windows-release, install Node.js 24.x ONLY (bytecode .jsc is locked to Node 24; other versions crash).
+2. Run detector.exe -> tells you if your PC supports the local IP rotator (needs native ISP IPv6 with a global /64 subnet).
+3. Run launcher.exe -> enter your license key -> pick proxy (1 = local ISP rotator, 2 = your own datacentre/residential proxy URL http://...) -> pick mode (1 headless, 2 farm).
+4. Install tampermonkey.user.js as a Tampermonkey userscript, open arras.io, it auto-connects to localhost:8082. Press F in the panel to spawn bots, B to kill all.
+
+FIRST RUN (MAC/LINUX)
+1. Node.js 24.x required too.
+2. cd into folder, then: chmod +x launcher bin/run*.sh bin/iprotator-*
+3. macOS only, clear Gatekeeper once: xattr -cr bin/iprotator-mac-arm64 (or -amd64, and xattr -cr launcher)
+4. IMPORTANT: node_modules is NOT included to keep the zip small -> cd bin && npm install   (skip on Windows release, it ships with node_modules)
+5. ./launcher (mac asks admin password via popup for the rotator; linux uses pkexec/sudo)
+6. Same Tampermonkey step as Windows.
+
+LICENSE KEYS
+- Keys come from us. Each key works 5 hours from the moment WE create it.
+- A key permanently binds to the FIRST machine that uses it (HWID lock). 'key is bound to another machine' means exactly that - we must reset it.
+- 'key expired' = 5h window over, ask for a fresh one.
+- Enter the key when the rotator window asks, BEFORE any admin prompt.
+
+IPV6 / ROTATOR
+- The built-in rotator claims ~100 free IPv6 addresses from YOUR OWN internet's /64 block and rotates them per bot connection. Free, residential IPs, resets on reboot.
+- No native IPv6 /64? (common on laptop hotspots, CGNAT, some ISPs): detector.exe will say NOT SUPPORTED. On Windows press Y when offered so it tries enabling IPv6 locally. If still unsupported -> use proxy option 2 in the launcher (any http proxy URL you own) or option 3 no-proxy. Bots work fine either way, just share one IP.
+
+CONTROLLER / USAGE
+- The browser userscript panel spawns/kills bots and streams your position so bots follow you.
+- Farm mode also has a cursor bridge (port 3456) and an invisible 'eye' bot that locks onto YOUR in-game name so bots follow your real tank even if your HUD lies. Set your exact in-game name in bin/config.json ("username") before spawning.
+- Party links: both normal #ea-style codes and the new long 64-char links work; long links resolve automatically on first join then get cached.
+- Dead WS bots respawn after 3 seconds. There is no movement jitter anymore, bots beeline exactly to the target.
+
+COMMON ERRORS
+- 'Cannot find module ws' -> you skipped npm install inside bin (mac/linux only).
+- bytenode / NODE_MODULE_VERSION mismatch -> wrong Node version, install 24.x.
+- 'FATAL: no global IPv6 /64 connection found' -> see IPV6 section above.
+- Nothing connects -> make sure the rotator window stays open the whole session.
+- IDA/x64dbg warning on iprotator.exe -> expected, it is obfuscated on purpose; do not open release binaries in analysis tools, the watchdog kills the session.
+====================`;
+
+const InvalidatedFile = path.join(__dirname, "invalidated_channels.json");
+function LoadInvalidated() {
+  try { if (!fs.existsSync(InvalidatedFile)) return new Set(); return new Set(JSON.parse(fs.readFileSync(InvalidatedFile, "utf8"))); } catch (e) { return new Set(); }
+}
+function SaveInvalidated() {
+  try { fs.writeFileSync(InvalidatedFile, JSON.stringify([...InvalidatedChannels], null, 2)); } catch (e) {}
+}
+const InvalidatedChannels = LoadInvalidated();
+const IncludedFile = path.join(__dirname, "included_info.json");
+function LoadIncluded() {
+  try { if (!fs.existsSync(IncludedFile)) return []; return JSON.parse(fs.readFileSync(IncludedFile, "utf8")); } catch (e) { return []; }
+}
+function SaveIncluded(Arr) {
+  try { fs.writeFileSync(IncludedFile, JSON.stringify(Arr, null, 2)); } catch (e) {}
+}
+function GetSystemPrompt() {
+  const Extra = LoadIncluded();
+  if (!Extra.length) return BaseSystemPrompt;
+  return BaseSystemPrompt + "\n\n=== ADMIN-ADDED INFO ===\n" + Extra.join("\n");
+}
+const SystemPrompt = BaseSystemPrompt;
+const History = new Map();
+function KeywordFallback(Question) {
+  const Q = Question.toLowerCase();
+  const Checks = [
+    [["node"], "Install Node.js **24.x** from nodejs.org - bytecode is locked to 24."],
+    [["expired", "key"], "Keys last 5h from creation and bind to your first machine. Ask us for a fresh one."],
+    [["bound"], "The key locked to its first machine. We can reset it on our side."],
+    [["ipv6", "/64", "not supported", "detector"], "Run detector.exe. If NOT SUPPORTED after pressing Y, use proxy option 2 in the launcher."],
+    [["module", "npm"], "cd bin && npm install (needed on mac/linux; windows ships node_modules)."],
+  ];
+  for (const [Words, Answer] of Checks) if (Words.some(W => Q.includes(W))) return Answer;
+  return null;
+}
+async function AskGemini(Question, ChannelId) {
+  let Messages = History.get(ChannelId);
+  if (!Messages) { Messages = []; History.set(ChannelId, Messages); }
+  Messages.push({ role: "user", parts: [{ text: Question }] });
+  if (Messages.length > 12) Messages.splice(0, 2);
+   const Body = { systemInstruction: { parts: [{ text: GetSystemPrompt() }] }, contents: Messages, generationConfig: { temperature: 0.4, maxOutputTokens: 700, thinkingConfig: { thinkingBudget: 0 } } };
+  const Url = `${GeminiApiBase}/${GeminiModel}:generateContent?key=${GeminiKey}`;
+  const Res = await fetch(Url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Body) });
+  const Data = await Res.json();
+  if (!Res.ok) throw new Error(`${Res.status}: ${JSON.stringify(Data).slice(0, 300)}`);
+  const Text = Data.candidates[0].content.parts[0].text;
+  Messages.push({ role: "model", parts: [{ text: Text }] });
+  return Text;
+}
 
 client.on(Events.ClientReady, async () => {
     console.log(`[system] bot ready: ${client.user.tag}`);
@@ -3601,6 +3712,39 @@ client.on("interactionCreate", async (interaction) => {
             content: "```\nstatus: [ success ]\nmessage: [ farm commands enabled ]\n```",
             ephemeral: true,
         });
+    }
+
+    if (interaction.commandName === "invalidate") {
+        const ChannelId = interaction.channelId;
+        const Name = interaction.channel.name || "";
+        if (!Name.toLowerCase().startsWith("ticket-")) {
+            return await interaction.reply({ content: "```\nerror: [ use this inside a ticket- channel ]\n```", ephemeral: true });
+        }
+        if (InvalidatedChannels.has(ChannelId)) {
+            return await interaction.reply({ content: "```\nstatus: [ already invalidated ]\n```", ephemeral: true });
+        }
+        InvalidatedChannels.add(ChannelId);
+        SaveInvalidated();
+        History.delete(ChannelId);
+        return await interaction.reply({ content: "```\nstatus: [ success ]\nmessage: [ AI support blacklisted in this ticket ]\n```", ephemeral: true });
+    }
+
+    if (interaction.commandName === "include") {
+        if (!interaction.memberPermissions.has(PermissionFlagsBits.Administrator)) {
+            return await interaction.reply({ content: "```\nerror: [ admin only ]\n```", ephemeral: true });
+        }
+        const Raw = interaction.options.getString("information", true);
+        const Lines = Raw.split(/\r?\n/).map((S) => S.trim()).filter(Boolean);
+        if (!Lines.length) {
+            return await interaction.reply({ content: "```\nerror: [ no valid lines ]\n```", ephemeral: true });
+        }
+        const Existing = LoadIncluded();
+        let Added = 0;
+        for (const Line of Lines) {
+            if (!Existing.includes(Line)) { Existing.push(Line); Added++; }
+        }
+        SaveIncluded(Existing);
+        return await interaction.reply({ content: "```\nstatus: [ success ]\nadded: [ " + Added + " line(s) ]\ntotal: [ " + Existing.length + " line(s) ]\n```", ephemeral: true });
     }
 
     if (interaction.commandName === "connect") {
@@ -5207,6 +5351,20 @@ async function processQueue() {
         }, 1000);
     }
 }
+
+client.on("messageCreate", async (Message) => {
+  if (Message.author.bot) return;
+  const Name = Message.channel.name || "";
+  if (!Name.toLowerCase().startsWith("ticket-")) return;
+  if (InvalidatedChannels.has(Message.channel.id)) return;
+  let Question = Message.content.trim().replace(`<@${client.user.id}>`, "").trim();
+  if (!Question) { await Message.reply("ask me anything about harras - setup, keys, ipv6, proxies, errors.").catch(()=>{}); return; }
+  await Message.channel.sendTyping().catch(()=>{});
+  let Answer;
+  try { Answer = await AskGemini(Question, Message.channel.id); }
+  catch (E) { console.log("[!] gemini failed:", String(E).slice(0, 200)); Answer = KeywordFallback(Question) || "gemini is unreachable rn. quick answers: Node 24 required, detector.exe checks ipv6 support, keys last 5h + bind to first machine, 'Cannot find module ws' = npm install inside bin."; }
+  for (let i = 0; i < Answer.length; i += 1900) await Message.reply(Answer.slice(i, i + 1900)).catch(()=>{});
+});
 
 async function startBot() {
     try {
