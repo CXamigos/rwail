@@ -2,7 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 
 const Token = process.env.DISCORD_TOKEN || "MTUzOTAzMzkyMDQyNTY5NzQzMg.Ge4Cqv.1lNoaSFQuvYIzJY6MCoQOvzA71NUDcX8q9B1hc";
-const GeminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "AQ.Ab8RN6Kc3b2ypJVTTGLZ8FQ0_5A9skxnMX5YbwbuGNwDomtbAw";
+const GeminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "";
 const Model = "gemini-2.5-flash-lite";
 const ApiBase = "https://generativelanguage.googleapis.com/v1beta/models";
 
@@ -69,6 +69,7 @@ function KeywordFallback(Question) {
 }
 
 async function AskGemini(Question, ChannelId) {
+  if (!GeminiKey) throw new Error("GEMINI_API_KEY not set");
   let Messages = History.get(ChannelId);
   if (!Messages) { Messages = []; History.set(ChannelId, Messages); }
   Messages.push({ role: "user", parts: [{ text: Question }] });

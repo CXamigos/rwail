@@ -3484,7 +3484,7 @@ const rest = new REST({ version: "10" }).setToken(TOKEN);
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
-const GeminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "AQ.Ab8RN6Kc3b2ypJVTTGLZ8FQ0_5A9skxnMX5YbwbuGNwDomtbAw";
+const GeminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "";
 const GeminiModel = "gemini-2.5-flash-lite";
 const GeminiApiBase = "https://generativelanguage.googleapis.com/v1beta/models";
 const BaseSystemPrompt = `You are the HARRAS support bot. HARRAS is a private arras.io bot-farm toolkit sold to a few friends. Answer ONLY questions about HARRAS using the knowledge base below. If asked anything unrelated, briefly refuse and steer back. Be short, casual, helpful. Never invent features.
@@ -3567,6 +3567,7 @@ function KeywordFallback(Question) {
   return null;
 }
 async function AskGemini(Question, ChannelId) {
+  if (!GeminiKey) throw new Error("GEMINI_API_KEY not set");
   let Messages = History.get(ChannelId);
   if (!Messages) { Messages = []; History.set(ChannelId, Messages); }
   Messages.push({ role: "user", parts: [{ text: Question }] });
