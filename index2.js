@@ -7,7 +7,7 @@
   //const fs = await import('fs');
   const fetchModule = await import("node-fetch");
   const realFetch = fetchModule.default || fetchModule;
-  const sendMessage = (message) => {
+  const sendMessage = (message) => { //a asdads
     if (parentPort) {
       parentPort.postMessage(message);
     } else if (process.send) {
