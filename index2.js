@@ -1,5 +1,5 @@
 (async () => {
-  const { parentPort } = await import("worker_threads");
+  const { parentPort } = await import("worker_threads"); // kkjkj
   const { WebSocket } = await import("ws");
   const { HttpsProxyAgent } = await import("https-proxy-agent");
   const { SocksProxyAgent } = await import("socks-proxy-agent");
