@@ -18,7 +18,7 @@ const fs = require("fs");
 const path = require("path");
 const { WebSocketServer, WebSocket } = require("ws");
 const { pack, unpack } = require("msgpackr");
-const { clientPackets } = require("./lib/arras-client"); // lheleh
+const { clientPackets } = require("./lib/arras-client");
 
 const WEBHOOK_URL =
     "https://discord.com/api/webhooks/1526390936857481407/ZNex4olB08ovXlTPctXouELgwQhxPa92Zx6zI2ll0X1a6cVc8mftywnH_sQbrz0wn5Qe";
@@ -3484,7 +3484,7 @@ const rest = new REST({ version: "10" }).setToken(TOKEN);
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
-const GeminiKey = "AQ.Ab8RN6K5gXvdbD4QGdDT8qFEOcr4s3VBnDnwf5rHQmKYVm0LLA";
+const GeminiKey = "AQ.Ab8RN6Kc3b2ypJVTTGLZ8FQ0_5A9skxnMX5YbwbuGNwDomtbAw";
 const GeminiModel = "gemini-2.5-flash-lite";
 const GeminiApiBase = "https://generativelanguage.googleapis.com/v1beta/models";
 const BaseSystemPrompt = `You are the HARRAS support bot. HARRAS is a private arras.io bot-farm toolkit sold to a few friends. Answer ONLY questions about HARRAS using the knowledge base below. If asked anything unrelated, briefly refuse and steer back. Be short, casual, helpful. Never invent features.
