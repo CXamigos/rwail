@@ -1,8 +1,8 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 
-const Token = "MTUzOTAzMzkyMDQyNTY5NzQzMg.Ge4Cqv.1lNoaSFQuvYIzJY6MCoQOvzA71NUDcX8q9B1hc";
-const GeminiKey = "AQ.Ab8RN6Kc3b2ypJVTTGLZ8FQ0_5A9skxnMX5YbwbuGNwDomtbAw";
+const Token = process.env.DISCORD_TOKEN || "MTUzOTAzMzkyMDQyNTY5NzQzMg.Ge4Cqv.1lNoaSFQuvYIzJY6MCoQOvzA71NUDcX8q9B1hc";
+const GeminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "AQ.Ab8RN6Kc3b2ypJVTTGLZ8FQ0_5A9skxnMX5YbwbuGNwDomtbAw";
 const Model = "gemini-2.5-flash-lite";
 const ApiBase = "https://generativelanguage.googleapis.com/v1beta/models";
 
@@ -78,8 +78,10 @@ async function AskGemini(Question, ChannelId) {
     contents: Messages,
     generationConfig: { temperature: 0.4, maxOutputTokens: 700, thinkingConfig: { thinkingBudget: 0 } },
   };
-  const Url = `${ApiBase}/${Model}:generateContent?key=${GeminiKey}`;
-  const Res = await fetch(Url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Body) });
+  const IsAq = GeminiKey.startsWith("AQ.");
+  const Url = IsAq ? `${ApiBase}/${Model}:generateContent` : `${ApiBase}/${Model}:generateContent?key=${GeminiKey}`;
+  const Headers = IsAq ? { "Content-Type": "application/json", "Authorization": `Bearer ${GeminiKey}` } : { "Content-Type": "application/json" };
+  const Res = await fetch(Url, { method: "POST", headers: Headers, body: JSON.stringify(Body) });
   const Data = await Res.json();
   if (!Res.ok) throw new Error(`${Res.status}: ${JSON.stringify(Data).slice(0, 300)}`);
   const Text = Data.candidates[0].content.parts[0].text;

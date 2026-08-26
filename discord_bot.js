@@ -3484,7 +3484,7 @@ const rest = new REST({ version: "10" }).setToken(TOKEN);
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
-const GeminiKey = "AQ.Ab8RN6Kc3b2ypJVTTGLZ8FQ0_5A9skxnMX5YbwbuGNwDomtbAw";
+const GeminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "AQ.Ab8RN6Kc3b2ypJVTTGLZ8FQ0_5A9skxnMX5YbwbuGNwDomtbAw";
 const GeminiModel = "gemini-2.5-flash-lite";
 const GeminiApiBase = "https://generativelanguage.googleapis.com/v1beta/models";
 const BaseSystemPrompt = `You are the HARRAS support bot. HARRAS is a private arras.io bot-farm toolkit sold to a few friends. Answer ONLY questions about HARRAS using the knowledge base below. If asked anything unrelated, briefly refuse and steer back. Be short, casual, helpful. Never invent features.
@@ -3571,9 +3571,11 @@ async function AskGemini(Question, ChannelId) {
   if (!Messages) { Messages = []; History.set(ChannelId, Messages); }
   Messages.push({ role: "user", parts: [{ text: Question }] });
   if (Messages.length > 12) Messages.splice(0, 2);
-   const Body = { systemInstruction: { parts: [{ text: GetSystemPrompt() }] }, contents: Messages, generationConfig: { temperature: 0.4, maxOutputTokens: 700, thinkingConfig: { thinkingBudget: 0 } } };
-  const Url = `${GeminiApiBase}/${GeminiModel}:generateContent?key=${GeminiKey}`;
-  const Res = await fetch(Url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Body) });
+    const Body = { systemInstruction: { parts: [{ text: GetSystemPrompt() }] }, contents: Messages, generationConfig: { temperature: 0.4, maxOutputTokens: 700, thinkingConfig: { thinkingBudget: 0 } } };
+   const IsAq = GeminiKey.startsWith("AQ.");
+   const Url = IsAq ? `${GeminiApiBase}/${GeminiModel}:generateContent` : `${GeminiApiBase}/${GeminiModel}:generateContent?key=${GeminiKey}`;
+   const Headers = IsAq ? { "Content-Type": "application/json", "Authorization": `Bearer ${GeminiKey}` } : { "Content-Type": "application/json" };
+   const Res = await fetch(Url, { method: "POST", headers: Headers, body: JSON.stringify(Body) });
   const Data = await Res.json();
   if (!Res.ok) throw new Error(`${Res.status}: ${JSON.stringify(Data).slice(0, 300)}`);
   const Text = Data.candidates[0].content.parts[0].text;
